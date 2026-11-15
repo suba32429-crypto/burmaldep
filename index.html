@@ -406,7 +406,7 @@ function renderPlayerItems(items){
  const root=$('liveFeed');if(!root)return;
  if(!items.length){root.innerHTML='<div class="feedEmpty">Пока нет предметов, сохранённых игроками.</div>';return}
  root.innerHTML=items.map((item,i)=>{
-  const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">':'';
+  const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'';
   const value=Number(item.item_value)>0?'<em>'+money(Number(item.item_value))+' БК</em>':'';
   return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+'</small>'+value+'</div></article>';
  }).join('');
