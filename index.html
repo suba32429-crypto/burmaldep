@@ -412,6 +412,8 @@ async function performUpgrade(){
  },3450);
 }
 document.querySelectorAll('[data-up-percent]').forEach(button=>button.addEventListener('click',()=>{if(upgradeSpinning)return;upgradePercent=Number(button.dataset.upPercent);upgradeTargetId=null;renderUpgrade()}));
+// Fallback hit-testing: если перекрывающий элемент перехватил клик по 75%/50%, определяем кнопку по координатам.
+document.addEventListener('click',event=>{if(upgradeSpinning)return;const x=event.clientX,y=event.clientY;const button=[...document.querySelectorAll('[data-up-percent="75"],[data-up-percent="50"]')].find(el=>{const r=el.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom});if(!button||event.target===button||button.contains(event.target))return;event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();upgradePercent=Number(button.dataset.upPercent);upgradeTargetId=null;renderUpgrade()},true);
 $('upgradeDo').addEventListener('click',performUpgrade);
 
 
