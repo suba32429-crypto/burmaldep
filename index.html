@@ -31,7 +31,7 @@
 .upgradeTargetHint{margin-top:10px;color:#a79dbb;font-size:11px;line-height:1.45}
 .upgradeFoot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:12px;background:#100d1b;border:1px solid #33264b;border-radius:10px}
 #upgradeStatus{font-size:11px;color:#bdb2ce;line-height:1.4}
-.upgradeDo{padding:12px 17px;border:1px solid #a65cff;border-radius:9px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer;white-space:nowrap}
+.upgradeDo{padding:12px 17px;border:1px solid #4fb879;border-radius:9px;background:linear-gradient(100deg,#269b58,#16713d);color:white;font-weight:900;cursor:pointer;white-space:nowrap;box-shadow:0 3px 14px #1b9b5833}
 .upgradeDo:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.4)}
 @media(max-width:850px){.upgradeGrid{grid-template-columns:1fr}.upgradeItems{grid-template-columns:repeat(3,minmax(0,1fr));max-height:370px}}
 @media(max-width:560px){.upgradeWrap{padding:10px}.upgradeHead{align-items:flex-start;flex-direction:column}.upgradeTag{font-size:9px}.upgradeItems{grid-template-columns:repeat(2,minmax(0,1fr))}.upgradePick{gap:6px;padding:6px}.upgradePick .upImg{width:46px;height:46px}.upgradeTargetCard .targetImg{width:90px;height:90px}.upgradeFoot{align-items:stretch;flex-direction:column}.upgradeDo{width:100%}}
@@ -72,7 +72,7 @@
 .upgradeRatio strong{color:#e2c5ff}.upgradeRatio .actual{font-size:17px;font-weight:950;color:#fff}
 .upgradeFoot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:12px;background:#100d1b;border:1px solid #33264b;border-radius:10px}
 #upgradeStatus{font-size:11px;color:#bdb2ce;line-height:1.45}
-.upgradeDo{padding:12px 17px;border:1px solid #a65cff;border-radius:9px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer;white-space:nowrap}
+.upgradeDo{padding:12px 17px;border:1px solid #4fb879;border-radius:9px;background:linear-gradient(100deg,#269b58,#16713d);color:white;font-weight:900;cursor:pointer;white-space:nowrap;box-shadow:0 3px 14px #1b9b5833}
 .upgradeDo:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.4)}
 @media(max-width:1000px){.upgradeMain{grid-template-columns:minmax(0,1fr) minmax(175px,.8fr)}.upgradeTargetBox{grid-column:1/-1}.upgradeTargetBox #upgradeTargetArea{max-width:540px;margin:auto}}
 @media(max-width:650px){.upgradeWrap{padding:10px}.upgradeHead{align-items:flex-start;flex-direction:column}.upgradeMain{grid-template-columns:1fr}.upgradeTargetBox{grid-column:auto}.upgradeSourceList{grid-template-columns:repeat(2,minmax(0,1fr));max-height:320px}.upgradeRing{width:140px;height:140px;margin:13px auto}.upgradeFoot{align-items:stretch;flex-direction:column}.upgradeDo{width:100%}}
@@ -110,6 +110,13 @@
 .authClose{background:#30243d!important}
 .authHint{font-size:11px;color:#c8b4dd;min-height:16px;margin-top:8px}
 .profileAvatarPreview{width:76px;height:76px;border-radius:50%;object-fit:cover;display:block;margin:8px auto 12px;border:2px solid #8452ae;background:#30203f}.profileModalActions{display:flex;gap:8px;margin-top:10px}.profileModalActions button{flex:1;padding:11px;border:0;border-radius:8px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer}
+.playerViewModal{width:min(620px,calc(100vw - 32px));max-height:85vh;overflow:auto;min-width:0}
+.playerViewModal #playerViewInventory{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:start}
+.playerViewModal #playerViewInventory .invCard{min-width:0;padding:9px;display:flex;flex-direction:column;gap:6px}
+.playerViewModal #playerViewInventory .invCard img{display:block;width:100%;height:112px;object-fit:contain;border-radius:7px;background:#21172d}
+.playerViewModal #playerViewInventory .invCard b{overflow-wrap:anywhere;min-height:0}
+.playerViewModal #playerViewInventory .invCard small{font-size:10px}
+@media(max-width:520px){.playerViewModal{padding:14px}.playerViewModal #playerViewInventory{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.playerViewModal #playerViewInventory .invCard img{height:92px}}
 @media(max-width:1150px){.feedPanel{grid-column:1/-1}.liveFeed{max-height:230px}}
 @media(max-width:760px){.accountTools{flex-wrap:wrap;justify-content:flex-end}.accountName{max-width:80px}.feedPanel{margin-bottom:10px}}
 
@@ -157,6 +164,12 @@
     <div class="upgradePointerOrbit" id="upgradePointerOrbit"><span class="upgradePointerArrow"></span></div>
     <div class="upgradeRingCenter"><b id="upgradePercentValue">—</b><small id="upgradePercentCaption">ВЫБЕРИ ПРЕДМЕТ</small></div>
    </div>
+   <div class="upgradePercents">
+    <button type="button" data-up-percent="75">75%</button>
+    <button type="button" data-up-percent="50">50%</button>
+    <button type="button" data-up-percent="30">30%</button>
+    <button type="button" data-up-percent="10">10%</button>
+   </div>
    <button id="upgradeDo" class="upgradeDo" disabled="">Запустить апгрейд</button>
    <div class="upgradeMath" id="upgradeMath">Процент рассчитывается автоматически по стоимости выбранных предметов.</div>
   </div>
@@ -165,12 +178,7 @@
    <div id="upgradeTargetArea"><div class="upgradePlaceholder">Выбери предмет слева и процент — система найдёт ближайшую цель среди всех предметов.</div></div>
   </div>
  </div>
- <div class="upgradeFoot"><div id="upgradeStatus">Выбери свой предмет и шанс выигрыша. Проиграл: предмет сгорает (виртуальные БК).</div><div class="upgradePercents">
-    <button type="button" data-up-percent="75">75%</button>
-    <button type="button" data-up-percent="50">50%</button>
-    <button type="button" data-up-percent="30">30%</button>
-    <button type="button" data-up-percent="10">10%</button>
-   </div></div>
+ <div class="upgradeFoot"><div id="upgradeStatus">Выбери свой предмет и шанс выигрыша. Проиграл: предмет сгорает (виртуальные БК).</div></div>
 </div></section><section class="page" id="page-author"><div class="inventoryPanel"><div class="upcoming"><div style="font-size:12px;color:#b77cff;font-weight:900;letter-spacing:2px;margin-bottom:10px">BURMALDEP</div><h2>Автор проекта</h2><p style="font-size:24px;color:#f5f1ff;font-weight:900;margin-top:12px">Субхан Ганбаров</p><p>Создатель проекта БУРМАЛДЕП.</p></div></div></section>
 </main>
 <aside class="right">
