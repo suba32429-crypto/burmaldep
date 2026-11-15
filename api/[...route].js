@@ -114,6 +114,14 @@ export default async function handler(req, res) {
     if (!user) return send(res,401,{error:"Сначала войди в аккаунт"});
 
     if (path === "me" && req.method === "GET") return send(res,200,{user:{id:user.id,username:user.username,avatar_url:user.avatar_url,total_play_seconds:Number(user.total_play_seconds)||0}});
+    if (path === "player-profile" && req.method === "GET") {
+      const playerId = String(new URL(req.url, "https://local.invalid").searchParams.get("id") || "");
+      if (!/^[0-9a-f-]{36}$/i.test(playerId)) return send(res,400,{error:"Некорректный профиль"});
+      const profile = await pool.query("SELECT id,username,avatar_url,total_play_seconds FROM players WHERE id=$1 LIMIT 1",[playerId]);
+      if (!profile.rows.length) return send(res,404,{error:"Игрок не найден"});
+      const items = await pool.query("SELECT item_id,item_name,item_image,item_value,rarity,slot,updated_at FROM player_inventory_items WHERE player_id=$1 ORDER BY slot ASC",[playerId]);
+      return send(res,200,{user:profile.rows[0],items:items.rows});
+    }
     if (path === "presence" && req.method === "POST") {
       await pool.query("UPDATE players SET total_play_seconds=total_play_seconds+LEAST(60,GREATEST(0,FLOOR(EXTRACT(EPOCH FROM (now()-(SELECT last_seen_at FROM player_sessions WHERE id=$1)))))) WHERE id=$2",[user.session_id,user.id]);
       await pool.query("UPDATE player_sessions SET last_seen_at=now(),expires_at=now()+interval '30 days' WHERE id=$1",[user.session_id]);
