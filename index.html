@@ -222,19 +222,19 @@ for(let c=0;c<50;c++)for(let j=0;j<100;j++){
  items.push({id,caseId:c,name,rarity:rarities[rarity],color:rarityColors[rarity],photo:boss?1:(id*5+c*3)%photos.length,value:boss?10000:100+((id*97)%4900),boss});
 }
 const bonusItems=[
- {name:'Неоновая корона',value:12500,rarity:'Эпический',color:rarityColors[2],photo:2},
- {name:'Золотой микрофон',value:18000,rarity:'Легендарный',color:rarityColors[3],photo:3},
- {name:'Бурма-кристалл',value:25000,rarity:'Легендарный',color:rarityColors[3],photo:4},
- {name:'Королевский портрет',value:32000,rarity:'Легендарный',color:rarityColors[3],photo:5},
- {name:'Алмазный куб',value:40000,rarity:'Легендарный',color:rarityColors[3],photo:6},
- {name:'Радужный трофей',value:48000,rarity:'Секретный',color:rarityColors[4],photo:7},
- {name:'Золотой трон',value:57000,rarity:'Секретный',color:rarityColors[4],photo:8},
- {name:'Космический Бурма',value:68000,rarity:'Секретный',color:rarityColors[4],photo:0},
- {name:'Корона императора',value:82000,rarity:'Секретный',color:rarityColors[4],photo:1},
- {name:'Абсолютный Босс',value:100000,rarity:'Секретный',color:'#ffd45f',photo:0,boss:true}
+ {name:'Неоновая корона',value:12500,rarity:'Эпический',color:rarityColors[2],art:'crown'},
+ {name:'Золотой микрофон',value:18000,rarity:'Легендарный',color:rarityColors[3],art:'microphone'},
+ {name:'Бурма-кристалл',value:25000,rarity:'Легендарный',color:rarityColors[3],art:'crystal'},
+ {name:'Королевский портрет',value:32000,rarity:'Легендарный',color:rarityColors[3],art:'portrait'},
+ {name:'Алмазный куб',value:40000,rarity:'Легендарный',color:rarityColors[3],art:'cube'},
+ {name:'Радужный трофей',value:48000,rarity:'Секретный',color:rarityColors[4],art:'trophy'},
+ {name:'Золотой трон',value:57000,rarity:'Секретный',color:rarityColors[4],art:'throne'},
+ {name:'Космический Бурма',value:68000,rarity:'Секретный',color:rarityColors[4],art:'planet'},
+ {name:'Корона императора',value:82000,rarity:'Секретный',color:rarityColors[4],art:'imperial'}
 ];
 items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});
-for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}let state={balance:12450,caseId:0,inventory:[],openingCount:0};
+for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}
+let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
@@ -245,7 +245,23 @@ function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');c
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
 function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+esc(fallbackSrc)+'\'">'}
-function itemImg(item){return makeImg(item.megaBoss?megaBossPhoto:photos[item.photo],item.name,item.megaBoss?megaBossPhoto:fallback)}
+function bonusItemArt(item){
+ const art={
+  crown:['#28104b','#d64cff','<path d="M30 76L18 34l25 17 17-28 17 28 25-17-12 42z"/><path d="M30 85h60" stroke="#fff2a8" stroke-width="6" stroke-linecap="round"/>'],
+  microphone:['#30200b','#ffc849','<rect x="43" y="18" width="34" height="54" rx="17"/><path d="M30 52v8a30 30 0 0 0 60 0v-8M60 90v15M43 105h34" fill="none" stroke="#fff0b5" stroke-width="7" stroke-linecap="round"/>'],
+  crystal:['#092c45','#53dfff','<path d="M60 13L91 42 78 91 42 91 29 42z"/><path d="M60 13L60 91M29 42h62M60 13L42 42 60 91 78 42z" fill="none" stroke="#e2fbff" stroke-width="4"/>'],
+  portrait:['#32152b','#ffb5e8','<rect x="24" y="14" width="72" height="92" rx="8" fill="none" stroke="#ffe0a0" stroke-width="7"/><circle cx="60" cy="46" r="16"/><path d="M34 91q26-38 52 0" />'],
+  cube:['#102c58','#72c7ff','<path d="M60 13L98 34v48L60 105 22 82V34z"/><path d="M22 34l38 22 38-22M60 56v49M60 13v43" fill="none" stroke="#e8f8ff" stroke-width="5"/>'],
+  trophy:['#392000','#ffdf65','<path d="M37 18h46v24q0 27-23 27T37 42z"/><path d="M37 28H20v12q0 20 24 20M83 28h17v12q0 20-24 20M60 69v21M40 103h40M47 90h26" fill="none" stroke="#fff1a8" stroke-width="7" stroke-linecap="round"/>'],
+  throne:['#34130c','#ffbd55','<path d="M34 18h52v40H34zM28 58h64v35H28zM22 18h12v76H22zM86 18h12v76H86zM22 94h76v12H22z"/><path d="M60 27l6 12 13 2-10 9 2 13-11-6-11 6 2-13-10-9 13-2z" fill="#fff0a8"/>'],
+  planet:['#091a48','#8b8cff','<circle cx="60" cy="56" r="27"/><ellipse cx="60" cy="56" rx="49" ry="17" fill="none" stroke="#e8ddff" stroke-width="7" transform="rotate(-24 60 56)"/><circle cx="47" cy="44" r="6" fill="#fff"/>'],
+  imperial:['#30103f','#ffcf5c','<path d="M27 82L18 28l26 22 16-34 16 34 26-22-9 54z"/><path d="M27 91h66" stroke="#fff1a8" stroke-width="7" stroke-linecap="round"/><circle cx="60" cy="17" r="6" fill="#fff"/>']
+ };
+ const [bg,fg,shape]=art[item.art]||art.crown;
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+bg+'"/><stop offset="1" stop-color="#090817"/></linearGradient><filter id="s"><feGaussianBlur stdDeviation="4"/></filter></defs><rect width="120" height="120" rx="14" fill="url(#g)"/><circle cx="60" cy="58" r="42" fill="'+fg+'" opacity=".18" filter="url(#s)"/><g fill="'+fg+'" stroke="'+fg+'" stroke-linejoin="round" stroke-linecap="round">'+shape+'</g><path d="M8 104h104" stroke="'+fg+'" stroke-opacity=".45" stroke-width="2"/></svg>';
+ return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+}
+function itemImg(item){return makeImg(item.bonus?bonusItemArt(item):(item.megaBoss?megaBossPhoto:photos[item.photo]),item.name,item.megaBoss?megaBossPhoto:fallback)}
 function itemCard(item,inventoryIndex){return '<article class="invCard" style="--rarity:'+item.color+'"><div class="bigImg">'+itemImg(item)+'</div><div class="details"><b>'+esc(item.name)+'</b><small>'+item.rarity+'</small><strong>'+money(item.value)+' БК</strong><button onclick="sellOne('+inventoryIndex+')">Продать за '+money(item.value)+' БК</button></div></article>'}
 function reelCard(item,selected=false){return '<div class="reelCard '+(selected?'selected':'')+'" style="--rarity:'+item.color+'">'+itemImg(item)+'<strong style="color:'+item.color+'">'+esc(item.name)+'</strong></div>'}
 function renderLanes(previewOnly=false){let shell=$('reelLanes');let count=qty;shell.classList.toggle('multi',count>=5);shell.innerHTML='';if(previewOnly){let arr=items.filter(x=>x.caseId===state.caseId).slice(0,6);shell.innerHTML=arr.map(x=>'<div class="lane"><div class="laneWindow"><div class="laneTrack">'+arr.map(y=>reelCard(y)).join('')+'</div></div></div>').join('');return}}
