@@ -117,7 +117,7 @@
 .onlinePanel{background:linear-gradient(145deg,#171326,#100d1a);border:1px solid #392957;border-radius:11px;padding:10px;min-width:0}
 .onlineHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;font-weight:950;font-size:12px;color:#eee4ff}
 .onlinePlayers{display:flex;flex-direction:column;gap:6px;max-height:230px;overflow:auto}
-.onlinePlayer{display:flex;align-items:center;gap:8px;padding:6px 7px;border:1px solid #302442;background:#171323;border-radius:8px;min-width:0;animation:feedDrop .45s ease both}
+.onlinePlayer{display:flex;align-items:center;gap:8px;padding:6px 7px;border:1px solid #302442;background:#171323;border-radius:8px;min-width:0;animation:feedDrop .45s ease both;width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;transition:border-color .15s,background .15s}.onlinePlayer:hover{border-color:#a45bff;background:#211832}
 .onlineAvatar{width:27px;height:27px;flex:none;border-radius:50%;object-fit:cover;background:#39234e;border:1px solid #8452ae}
 .onlineAvatarFallback{width:27px;height:27px;flex:none;display:grid;place-items:center;border-radius:50%;background:#39234e}
 .onlinePlayerName{font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -157,12 +157,7 @@
     <div class="upgradePointerOrbit" id="upgradePointerOrbit"><span class="upgradePointerArrow"></span></div>
     <div class="upgradeRingCenter"><b id="upgradePercentValue">—</b><small id="upgradePercentCaption">ВЫБЕРИ ПРЕДМЕТ</small></div>
    </div>
-   <div class="upgradePercents">
-    <button type="button" data-up-percent="75">75%</button>
-    <button type="button" data-up-percent="50">50%</button>
-    <button type="button" data-up-percent="30">30%</button>
-    <button type="button" data-up-percent="10">10%</button>
-   </div>
+   <button id="upgradeDo" class="upgradeDo" disabled="">Запустить апгрейд</button>
    <div class="upgradeMath" id="upgradeMath">Процент рассчитывается автоматически по стоимости выбранных предметов.</div>
   </div>
   <div class="upgradeBox upgradeTargetBox">
@@ -170,7 +165,12 @@
    <div id="upgradeTargetArea"><div class="upgradePlaceholder">Выбери предмет слева и процент — система найдёт ближайшую цель среди всех предметов.</div></div>
   </div>
  </div>
- <div class="upgradeFoot"><div id="upgradeStatus">Выбери свой предмет и шанс выигрыша. Проиграл: предмет сгорает (виртуальные БК).</div><button id="upgradeDo" class="upgradeDo" disabled="">Запустить апгрейд</button></div>
+ <div class="upgradeFoot"><div id="upgradeStatus">Выбери свой предмет и шанс выигрыша. Проиграл: предмет сгорает (виртуальные БК).</div><div class="upgradePercents">
+    <button type="button" data-up-percent="75">75%</button>
+    <button type="button" data-up-percent="50">50%</button>
+    <button type="button" data-up-percent="30">30%</button>
+    <button type="button" data-up-percent="10">10%</button>
+   </div></div>
 </div></section><section class="page" id="page-author"><div class="inventoryPanel"><div class="upcoming"><div style="font-size:12px;color:#b77cff;font-weight:900;letter-spacing:2px;margin-bottom:10px">BURMALDEP</div><h2>Автор проекта</h2><p style="font-size:24px;color:#f5f1ff;font-weight:900;margin-top:12px">Субхан Ганбаров</p><p>Создатель проекта БУРМАЛДЕП.</p></div></div></section>
 </main>
 <aside class="right">
@@ -186,6 +186,15 @@
 <div class="passwordFields"><input id="profileOldPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="Старый пароль"><input id="profileNewPassword" type="password" autocomplete="new-password" maxlength="128" placeholder="Новый пароль (от 8 символов)"><button class="accountBtn" id="profileChangePassword" type="button">Изменить пароль</button></div>
 <div class="authHint" id="profileHint"></div>
 <div class="profileModalActions"><button id="profileSave" type="button">Сохранить ник</button><button class="authClose" id="profileClose" type="button">Закрыть</button></div>
+</div></div>
+<div class="authModalBack" id="playerViewModal"><div class="authModal playerViewModal">
+<h2 id="playerViewName">Профиль игрока</h2><p>Публичный профиль и сохранённые предметы.</p>
+<img class="profileAvatarPreview" id="playerViewAvatar" alt="Аватар игрока">
+<div class="profileStats" id="playerViewStats"></div>
+<h3 style="margin:14px 0 8px;font-size:13px;color:#f3eaff">Инвентарь</h3>
+<div class="invGrid" id="playerViewInventory"></div>
+<div class="authHint" id="playerViewHint"></div>
+<div class="authActions"><button class="authClose" id="playerViewClose" type="button">Закрыть</button></div>
 </div></div>
 <div class="authModalBack" id="authModal"><div class="authModal">
 <h2 id="authTitle">Вход в Бурмалдеп</h2><p>Создай аккаунт или войди, чтобы появиться в общей ленте.</p>
@@ -414,8 +423,35 @@ async function loadCurrentPlayer(){
 function renderOnlinePlayers(players){
  const root=$('onlinePlayers');if(!root)return;
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
- root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
+ root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\\'none\\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></button>').join('');
 }
+async function openPlayerProfile(playerId){
+ const modal=$('playerViewModal');if(!modal)return;
+ $('playerViewName').textContent='Загрузка профиля…';
+ $('playerViewAvatar').src='';
+ $('playerViewStats').textContent='';
+ $('playerViewInventory').innerHTML='<div class="feedEmpty">Загружаю инвентарь…</div>';
+ $('playerViewHint').textContent='';
+ modal.classList.add('show');
+ try{
+  const data=await apiRequest('player-profile?id='+encodeURIComponent(playerId));
+  const player=data.user||{},items=data.items||[];
+  $('playerViewName').textContent=player.username||'Профиль игрока';
+  $('playerViewAvatar').src=player.avatar_url||'';
+  $('playerViewStats').innerHTML='Время в игре: <b>'+formatPlaytime(player.total_play_seconds||0)+'</b><br>Предметов в инвентаре: <b>'+items.length+'</b>';
+  $('playerViewInventory').innerHTML=items.length?items.map(item=>'<div class="invCard">'+(item.item_image?'<img src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">':'')+'<b>'+esc(item.item_name)+'</b><small>'+money(Number(item.item_value)||0)+' БК</small></div>').join(''):'<div class="feedEmpty">Инвентарь пока пуст.</div>';
+ }catch(e){
+  $('playerViewName').textContent='Не удалось открыть профиль';
+  $('playerViewInventory').innerHTML='';
+  $('playerViewHint').textContent=e.message||'Ошибка загрузки профиля';
+ }
+}
+$('onlinePlayers').addEventListener('click',e=>{
+ const button=e.target.closest('[data-player-id]');
+ if(button)openPlayerProfile(button.dataset.playerId);
+});
+$('playerViewClose').addEventListener('click',()=>$('playerViewModal').classList.remove('show'));
+$('playerViewModal').addEventListener('click',e=>{if(e.target.id==='playerViewModal')e.currentTarget.classList.remove('show')});
 function renderPlayerItems(items){
  const root=$('liveFeed');if(!root)return;
  if(!items.length){root.innerHTML='<div class="feedEmpty">Пока нет предметов, сохранённых игроками.</div>';return}
