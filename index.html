@@ -381,12 +381,13 @@ async function authenticate(mode){
   localStorage.setItem(AUTH_KEY,data.token);currentPlayer=data.user;updateAccountUI();
   $('authModal').classList.remove('show');$('authPassword').value='';
   notify(mode==='register'?'Аккаунт создан!':'Ты вошёл в аккаунт');
+  if(state.inventory.length)await syncInventory();
   await refreshSharedData();
  }catch(e){$('authHint').textContent=e.message;}
 }
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
- try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await refreshSharedData();await pingPresence();}
+ try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();if(state.inventory.length)await syncInventory();await refreshSharedData();await pingPresence();}
  catch(e){localStorage.removeItem(AUTH_KEY);currentPlayer=null;updateAccountUI();}
 }
 function renderOnlinePlayers(players){
