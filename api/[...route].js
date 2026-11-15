@@ -1,0 +1,126 @@
+import { Pool } from "pg";
+import { randomBytes, createHash, scryptSync, timingSafeEqual } from "node:crypto";
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes("neon.tech") ? { rejectUnauthorized: false } : undefined,
+  max: 3
+});
+let schemaReady;
+async function ensureSchema() {
+  if (!schemaReady) schemaReady = (async () => {
+    await pool.query("ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar_url text");
+    await pool.query(`CREATE TABLE IF NOT EXISTS activity_events (
+      id bigserial PRIMARY KEY,
+      player_id uuid NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      username text NOT NULL,
+      avatar_url text,
+      item_name text NOT NULL,
+      item_image text,
+      case_title text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`);
+    await pool.query("CREATE INDEX IF NOT EXISTS activity_events_created_idx ON activity_events(created_at DESC)");
+  })();
+  return schemaReady;
+}
+const hash = value => createHash("sha256").update(value).digest("hex");
+const send = (res, status, body) => { res.status(status).json(body); };
+function makePassword(password) {
+  const salt = randomBytes(16).toString("hex");
+  return "scrypt$" + salt + "$" + scryptSync(password, salt, 64).toString("hex");
+}
+function checkPassword(password, stored) {
+  const parts = String(stored || "").split("$");
+  if (parts.length !== 3 || parts[0] !== "scrypt") return false;
+  const actual = scryptSync(password, parts[1], 64);
+  const expected = Buffer.from(parts[2], "hex");
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+async function createSession(playerId) {
+  const token = randomBytes(32).toString("hex");
+  await pool.query(
+    "INSERT INTO player_sessions (player_id, token_hash, expires_at, last_seen_at) VALUES ($1,$2,now()+interval '30 days',now())",
+    [playerId, hash(token)]
+  );
+  return token;
+}
+async function getUser(req) {
+  const auth = String(req.headers.authorization || "");
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token || token.length > 200) return null;
+  const q = await pool.query(
+    `SELECT p.id,p.username,p.avatar_url,s.id AS session_id
+     FROM player_sessions s JOIN players p ON p.id=s.player_id
+     WHERE s.token_hash=$1 AND s.expires_at>now() LIMIT 1`,
+    [hash(token)]
+  );
+  return q.rows[0] || null;
+}
+export default async function handler(req, res) {
+  try {
+    await ensureSchema();
+    const path = new URL(req.url, "https://local.invalid").pathname.replace(/^\/api\/?/, "").replace(/\/$/, "");
+    if (req.method === "OPTIONS") return res.status(204).end();
+
+    if (path === "register" && req.method === "POST") {
+      const username = String(req.body?.username || "").trim();
+      const password = String(req.body?.password || "");
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return send(res,400,{error:"Ник: 3–20 символов, латиница, цифры или _"});
+      if (password.length < 8 || password.length > 128) return send(res,400,{error:"Пароль должен быть от 8 до 128 символов"});
+      const result = await pool.query(
+        "INSERT INTO players (username,password_hash) VALUES ($1,$2) RETURNING id,username,avatar_url",
+        [username, makePassword(password)]
+      ).catch(e => { if (e.code === "23505") return null; throw e; });
+      if (!result) return send(res,409,{error:"Такой ник уже занят"});
+      const token = await createSession(result.rows[0].id);
+      return send(res,201,{token,user:result.rows[0]});
+    }
+
+    if (path === "login" && req.method === "POST") {
+      const username = String(req.body?.username || "").trim();
+      const password = String(req.body?.password || "");
+      const q = await pool.query("SELECT id,username,password_hash,avatar_url FROM players WHERE lower(username)=lower($1) LIMIT 1",[username]);
+      const player = q.rows[0];
+      if (!player || !checkPassword(password,player.password_hash)) return send(res,401,{error:"Неверный ник или пароль"});
+      const token = await createSession(player.id);
+      return send(res,200,{token,user:{id:player.id,username:player.username,avatar_url:player.avatar_url}});
+    }
+
+    const user = await getUser(req);
+    if (!user) return send(res,401,{error:"Сначала войди в аккаунт"});
+
+    if (path === "me" && req.method === "GET") return send(res,200,{user:{id:user.id,username:user.username,avatar_url:user.avatar_url}});
+    if (path === "presence" && req.method === "POST") {
+      await pool.query("UPDATE player_sessions SET last_seen_at=now(),expires_at=now()+interval '30 days' WHERE id=$1",[user.session_id]);
+      const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
+      return send(res,200,{online:count.rows[0].online});
+    }
+    if (path === "feed" && req.method === "GET") {
+      const rows = await pool.query("SELECT id,username,avatar_url,item_name,item_image,case_title,created_at FROM activity_events ORDER BY id DESC LIMIT 25");
+      const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
+      return send(res,200,{events:rows.rows,online:count.rows[0].online});
+    }
+    if (path === "avatar" && req.method === "POST") {
+      const avatar = String(req.body?.avatar || "");
+      if (avatar && (!/^data:image\/(png|jpeg|webp|gif);base64,/.test(avatar) || avatar.length > 350000)) return send(res,400,{error:"Загрузи PNG, JPG, WEBP или GIF размером до 250 КБ"});
+      await pool.query("UPDATE players SET avatar_url=$1 WHERE id=$2",[avatar || null,user.id]);
+      return send(res,200,{avatar_url:avatar || null});
+    }
+    if (path === "activity" && req.method === "POST") {
+      const itemName = String(req.body?.item_name || "").slice(0,100);
+      const itemImage = String(req.body?.item_image || "").slice(0,700);
+      const caseTitle = String(req.body?.case_title || "").slice(0,80);
+      if (!itemName) return send(res,400,{error:"Не указано название предмета"});
+      await pool.query(
+        "INSERT INTO activity_events (player_id,username,avatar_url,item_name,item_image,case_title) VALUES ($1,$2,$3,$4,$5,$6)",
+        [user.id,user.username,user.avatar_url,itemName,itemImage,caseTitle]
+      );
+      return send(res,201,{ok:true});
+    }
+    return send(res,404,{error:"Маршрут не найден"});
+  } catch (error) {
+    console.error("Burmaldep API:",error);
+    return send(res,500,{error:"Ошибка сервера. Проверь подключение базы данных."});
+  }
+}
