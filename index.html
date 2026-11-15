@@ -413,7 +413,7 @@ async function pingPresence(){
  catch(e){}
 }
 $('authOpen').addEventListener('click',()=>{
- if(currentPlayer){localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть общую ленту.</div>';notify('Ты вышел из аккаунта');}
+ if(currentPlayer){save();updateBalance();localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть общую ленту.</div>';notify('Ты вышел из аккаунта');}
  else openAuth();
 });
 function openProfile(){
