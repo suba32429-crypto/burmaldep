@@ -107,6 +107,14 @@
 .upgradePointerArrow{position:absolute;top:1px;left:calc(50% - 9px);width:18px;height:22px;display:block;background:linear-gradient(180deg,#fff8ff 0%,#d8a5ff 48%,#8b20ff 100%);clip-path:polygon(50% 100%,0 0,100% 0);filter:drop-shadow(0 0 7px #c58aff)}
 .upgradePointerOrbit.spinning{filter:drop-shadow(0 0 9px #d5a0ff)}
 
+
+/* Upgrade layout touch-up: centered launch button and slightly wider percent controls */
+.upgradeMain{grid-template-columns:minmax(190px,1fr) minmax(190px,.9fr) minmax(220px,1fr)}
+.upgradePercents button{height:52px;min-height:52px;padding-left:10px;padding-right:10px}
+.upgradePercentBox .upgradeDo{display:block;width:min(100%,260px);margin:12px auto 0;text-align:center}
+@media(max-width:1000px){.upgradeMain{grid-template-columns:minmax(0,1fr) minmax(190px,.9fr)}}
+@media(max-width:650px){.upgradeMain{grid-template-columns:1fr}}
+
 /* Account, avatar and live feed */
 .accountTools{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .accountBtn,.avatarBtn{border:1px solid #56377c;background:#211631;color:#f4eaff;border-radius:9px;padding:9px 12px;font-weight:900;cursor:pointer}
