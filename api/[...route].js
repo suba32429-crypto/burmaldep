@@ -14,6 +14,7 @@ let schemaReady;
 async function ensureSchema() {
   if (!schemaReady) schemaReady = (async () => {
     await pool.query("ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar_url text");
+    await pool.query("ALTER TABLE players ADD COLUMN IF NOT EXISTS total_play_seconds bigint NOT NULL DEFAULT 0");
     await pool.query(`CREATE TABLE IF NOT EXISTS activity_events (
       id bigserial PRIMARY KEY,
       player_id uuid NOT NULL REFERENCES players(id) ON DELETE CASCADE,
@@ -72,7 +73,7 @@ async function getUser(req) {
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token || token.length > 200) return null;
   const q = await pool.query(
-    `SELECT p.id,p.username,p.avatar_url,s.id AS session_id
+    `SELECT p.id,p.username,p.avatar_url,p.total_play_seconds,s.id AS session_id
      FROM player_sessions s JOIN players p ON p.id=s.player_id
      WHERE s.token_hash=$1 AND s.expires_at>now() LIMIT 1`,
     [hash(token)]
@@ -112,8 +113,9 @@ export default async function handler(req, res) {
     const user = await getUser(req);
     if (!user) return send(res,401,{error:"Сначала войди в аккаунт"});
 
-    if (path === "me" && req.method === "GET") return send(res,200,{user:{id:user.id,username:user.username,avatar_url:user.avatar_url}});
+    if (path === "me" && req.method === "GET") return send(res,200,{user:{id:user.id,username:user.username,avatar_url:user.avatar_url,total_play_seconds:Number(user.total_play_seconds)||0}});
     if (path === "presence" && req.method === "POST") {
+      await pool.query("UPDATE players SET total_play_seconds=total_play_seconds+LEAST(60,GREATEST(0,FLOOR(EXTRACT(EPOCH FROM (now()-(SELECT last_seen_at FROM player_sessions WHERE id=$1)))))) WHERE id=$2",[user.session_id,user.id]);
       await pool.query("UPDATE player_sessions SET last_seen_at=now(),expires_at=now()+interval '30 days' WHERE id=$1",[user.session_id]);
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
       return send(res,200,{online:count.rows[0].online});
@@ -190,6 +192,15 @@ export default async function handler(req, res) {
       }
       await pool.query("DELETE FROM activity_events WHERE created_at < now()-interval '14 days'");
       return send(res,201,{ok:true});
+    }
+    if (path === "password" && req.method === "POST") {
+      const currentPassword = String(req.body?.current_password || "");
+      const newPassword = String(req.body?.new_password || "");
+      if (newPassword.length < 8 || newPassword.length > 128) return send(res,400,{error:"Новый пароль должен быть от 8 до 128 символов"});
+      const stored = await pool.query("SELECT password_hash FROM players WHERE id=$1",[user.id]);
+      if (!stored.rowCount || !checkPassword(currentPassword,stored.rows[0].password_hash)) return send(res,401,{error:"Старый пароль указан неверно"});
+      await pool.query("UPDATE players SET password_hash=$1 WHERE id=$2",[makePassword(newPassword),user.id]);
+      return send(res,200,{ok:true});
     }
     if (path === "username" && req.method === "POST") {
       const username = String(req.body?.username || "").trim();
