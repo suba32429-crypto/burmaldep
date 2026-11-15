@@ -18,8 +18,12 @@ async function ensureSchema() {
       item_name text NOT NULL,
       item_image text,
       case_title text,
+      item_value integer NOT NULL DEFAULT 0,
+      rarity text,
       created_at timestamptz NOT NULL DEFAULT now()
     )`);
+    await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS item_value integer NOT NULL DEFAULT 0");
+    await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS rarity text");
     await pool.query("CREATE INDEX IF NOT EXISTS activity_events_created_idx ON activity_events(created_at DESC)");
   })();
   return schemaReady;
@@ -102,7 +106,30 @@ export default async function handler(req, res) {
         WHERE s.expires_at>now() AND s.last_seen_at>now()-interval '90 seconds'
         ORDER BY p.id,s.last_seen_at DESC LIMIT 30`);
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
-      return send(res,200,{players:rows.rows,online:count.rows[0].online});
+      const events = await pool.query(`SELECT id,username,avatar_url,item_name,item_image,case_title,item_value,rarity,created_at
+        FROM activity_events ORDER BY created_at DESC LIMIT 30`);
+      return send(res,200,{players:rows.rows,online:count.rows[0].online,events:events.rows});
+    }
+
+    if (path === "activity" && req.method === "POST") {
+      const items = Array.isArray(req.body?.items) ? req.body.items.slice(0,10) : [];
+      if (!items.length) return send(res,400,{error:"Нет предметов для публикации"});
+      for (const item of items) {
+        const itemName = String(item?.item_name || "").trim().slice(0,120);
+        const itemImage = String(item?.item_image || "").trim().slice(0,2048);
+        const caseTitle = String(item?.case_title || "").trim().slice(0,80);
+        const itemValue = Math.max(0,Math.min(100000000,Math.trunc(Number(item?.item_value)||0)));
+        const rarity = String(item?.rarity || "").trim().slice(0,32);
+        if (!itemName) continue;
+        if (itemImage && !/^https:\/\//i.test(itemImage)) continue;
+        await pool.query(
+          `INSERT INTO activity_events (player_id,username,avatar_url,item_name,item_image,case_title,item_value,rarity)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+          [user.id,user.username,user.avatar_url,itemName,itemImage || null,caseTitle || null,itemValue,rarity || null]
+        );
+      }
+      await pool.query("DELETE FROM activity_events WHERE created_at < now()-interval '14 days'");
+      return send(res,201,{ok:true});
     }
     if (path === "username" && req.method === "POST") {
       const username = String(req.body?.username || "").trim();
