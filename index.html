@@ -109,6 +109,7 @@
 .authActions button{flex:1;padding:11px;border:0;border-radius:8px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer}
 .authClose{background:#30243d!important}
 .authHint{font-size:11px;color:#c8b4dd;min-height:16px;margin-top:8px}
+.profileAvatarPreview{width:76px;height:76px;border-radius:50%;object-fit:cover;display:block;margin:8px auto 12px;border:2px solid #8452ae;background:#30203f}.profileModalActions{display:flex;gap:8px;margin-top:10px}.profileModalActions button{flex:1;padding:11px;border:0;border-radius:8px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer}
 @media(max-width:1150px){.feedPanel{grid-column:1/-1}.liveFeed{max-height:230px}}
 @media(max-width:760px){.accountTools{flex-wrap:wrap;justify-content:flex-end}.accountName{max-width:80px}.feedPanel{margin-bottom:10px}}
 </style></head><body>
@@ -161,6 +162,14 @@
 <div class="sideAction"><button id="goInventory">Открыть инвентарь</button></div></aside>
 </div>
 <div class="modalBack" id="resultModal"><div class="modal"><h2 id="resultTitle">Выпавшие предметы</h2><p id="resultText"></p><div id="resultItems" class="invGrid"></div><button id="resultClose">Продолжить</button></div></div><div class="toast" id="toast"></div>
+<div class="authModalBack" id="profileModal"><div class="authModal">
+<h2>Мой профиль</h2><p>Измени ник или выбери новую аватарку.</p>
+<img class="profileAvatarPreview" id="profileAvatarPreview" alt="Твоя аватарка">
+<button class="accountBtn" id="profileChangeAvatar" type="button" style="width:100%">Изменить аватарку</button>
+<input id="profileUsername" autocomplete="username" maxlength="20" placeholder="Новый ник (3–20 символов)">
+<div class="authHint" id="profileHint"></div>
+<div class="profileModalActions"><button id="profileSave" type="button">Сохранить ник</button><button class="authClose" id="profileClose" type="button">Закрыть</button></div>
+</div></div>
 <div class="authModalBack" id="authModal"><div class="authModal">
 <h2 id="authTitle">Вход в Бурмалдеп</h2><p>Создай аккаунт или войди, чтобы появиться в общей ленте.</p>
 <input id="authUsername" autocomplete="username" maxlength="20" placeholder="Ник (3–20 символов)">
@@ -379,12 +388,34 @@ $('authOpen').addEventListener('click',()=>{
  if(currentPlayer){localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='—';$('liveFeed').innerHTML='<div class="feedEmpty">Войди в аккаунт, чтобы увидеть игроков онлайн.</div>';notify('Ты вышел из аккаунта');}
  else openAuth();
 });
-$('avatarOpen').addEventListener('click',()=>{if(!currentPlayer){openAuth();return}$('avatarFile').click()});
+function openProfile(){
+ if(!currentPlayer){openAuth();return}
+ $('profileUsername').value=currentPlayer.username||'';
+ $('profileHint').textContent='';
+ $('profileAvatarPreview').src=currentPlayer.avatar_url||'';
+ $('profileModal').classList.add('show');
+}
+$('avatarOpen').addEventListener('click',openProfile);
+$('profileChangeAvatar').addEventListener('click',()=>$('avatarFile').click());
+$('profileClose').addEventListener('click',()=>$('profileModal').classList.remove('show'));
+$('profileModal').addEventListener('click',e=>{if(e.target.id==='profileModal')e.currentTarget.classList.remove('show')});
+$('profileSave').addEventListener('click',async()=>{
+ const username=$('profileUsername').value.trim();
+ $('profileHint').textContent='Сохраняем…';
+ try{
+  const data=await apiRequest('username','POST',{username});
+  currentPlayer={...currentPlayer,...data.user};
+  updateAccountUI();
+  $('profileHint').textContent='Ник обновлён!';
+  notify('Ник успешно изменён');
+  await refreshSharedData();
+ }catch(err){$('profileHint').textContent=err.message;}
+});
 $('avatarFile').addEventListener('change',async e=>{
  const file=e.target.files?.[0];if(!file)return;
  if(file.size>245000){notify('Файл слишком большой. Максимум 240 КБ.');e.target.value='';return;}
  const reader=new FileReader();
- reader.onload=async()=>{try{const data=await apiRequest('avatar','POST',{avatar:reader.result});currentPlayer.avatar_url=data.avatar_url;updateAccountUI();notify('Аватар обновлён');await refreshSharedData();}catch(err){notify(err.message)}};
+ reader.onload=async()=>{try{const data=await apiRequest('avatar','POST',{avatar:reader.result});currentPlayer.avatar_url=data.avatar_url;updateAccountUI();$('profileAvatarPreview').src=data.avatar_url||'';notify('Аватар обновлён');await refreshSharedData();}catch(err){notify(err.message)}};
  reader.readAsDataURL(file);
 });
 $('authLogin').addEventListener('click',()=>authenticate('login'));
