@@ -240,16 +240,27 @@ for(let c=0;c<50;c++)for(let j=0;j<100;j++){
  const name=boss?(j===0?'Босс Меллстрой':'Босс Меллстрой · образ '+(j+1)):wordA[(id*7)%wordA.length]+' '+wordB[(id*3)%wordB.length]+' '+wordC[(id*11)%wordC.length]+' №'+String(id+1).padStart(4,'0');
  items.push({id,caseId:c,name,rarity:rarities[rarity],color:rarityColors[rarity],photo:boss?1:(id*5+c*3)%photos.length,value:boss?10000:100+((id*97)%4900),boss});
 }
+const bonusPhotos=[
+'https://pbs.twimg.com/media/GJPCbp6XkAAPl-O.jpg',
+'https://multi-admin.ru/mediabank_blog/11/278960/6d76c06d96d8daeabf0f23951608e0fb11zon-cropped-4-.jpeg',
+'https://s6.tvp.pl/images2/6/9/7/uid_69761111dd8d4c91a0f3027f295d2312_width_900_play_0_pos_0_gs_0_height_506.jpg',
+'https://steepmen.ru/wp-content/uploads/2020/10/Screenshot_2-1-768x568.png',
+'https://s.cq.ru/img/f/e/2024/4/19/240082.jpg',
+'https://news.store.rambler.ru/img/6fcf1cf3df0b9992acad47128767e877?img-1-resize=height%3A400%2Cfit%3Amax&img-2-filter=sharpen&img-format=auto',
+'https://static.mk.ru/upload/entities/2024/02/13/16/photoreportsImages/detailPicture/39/ee/f1/79/0c0273ba579acde94e394bed7d03bdb1.jpg',
+'https://images.news.ru/photo/c635fed8-ef56-11ee-8786-02420a0000c9_780.jpg',
+'https://funny.klev.club/smeh/uploads/posts/2024-04/funny-klev-club-dar4-p-smeshnie-kartinki-melstroi-27.jpg'
+];
 const bonusItems=[
- {name:'Неоновая корона',value:12500,rarity:'Эпический',color:rarityColors[2],photo:0},
- {name:'Золотой микрофон',value:18000,rarity:'Легендарный',color:rarityColors[3],photo:1},
- {name:'Бурма-кристалл',value:25000,rarity:'Легендарный',color:rarityColors[3],photo:2},
- {name:'Королевский портрет',value:32000,rarity:'Легендарный',color:rarityColors[3],photo:3},
- {name:'Алмазный куб',value:40000,rarity:'Легендарный',color:rarityColors[3],photo:4},
- {name:'Радужный трофей',value:48000,rarity:'Секретный',color:rarityColors[4],photo:5},
- {name:'Золотой трон',value:57000,rarity:'Секретный',color:rarityColors[4],photo:6},
- {name:'Космический Бурма',value:68000,rarity:'Секретный',color:rarityColors[4],photo:7},
- {name:'Корона императора',value:82000,rarity:'Секретный',color:rarityColors[4],photo:8}
+ {name:'Мама Бурмалда',value:12500,rarity:'Эпический',color:rarityColors[2],photo:0},
+ {name:'Птица-переполох',value:18000,rarity:'Легендарный',color:rarityColors[3],photo:1},
+ {name:'Панк-район',value:25000,rarity:'Легендарный',color:rarityColors[3],photo:2},
+ {name:'Бульба-монстр',value:32000,rarity:'Легендарный',color:rarityColors[3],photo:3},
+ {name:'Меллстрой на чиле',value:40000,rarity:'Легендарный',color:rarityColors[3],photo:4},
+ {name:'Меллстройский император',value:48000,rarity:'Секретный',color:rarityColors[4],photo:5},
+ {name:'Бурма на максималках',value:57000,rarity:'Секретный',color:rarityColors[4],photo:6},
+ {name:'Легенда стрима',value:68000,rarity:'Секретный',color:rarityColors[4],photo:7},
+ {name:'Меллстройский хаос',value:82000,rarity:'Секретный',color:rarityColors[4],photo:8}
 ];
 items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});
 for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}
@@ -264,7 +275,7 @@ function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');c
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
 function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+esc(fallbackSrc)+'\'">'}
-function itemImg(item){return makeImg(item.megaBoss?megaBossPhoto:photos[item.photo],item.name,item.megaBoss?megaBossPhoto:fallback)}
+function itemImg(item){const url=item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
 function itemCard(item,inventoryIndex){return '<article class="invCard" style="--rarity:'+item.color+'"><div class="bigImg">'+itemImg(item)+'</div><div class="details"><b>'+esc(item.name)+'</b><small>'+item.rarity+'</small><strong>'+money(item.value)+' БК</strong><button onclick="sellOne('+inventoryIndex+')">Продать за '+money(item.value)+' БК</button></div></article>'}
 function reelCard(item,selected=false){return '<div class="reelCard '+(selected?'selected':'')+'" style="--rarity:'+item.color+'">'+itemImg(item)+'<strong style="color:'+item.color+'">'+esc(item.name)+'</strong></div>'}
 function renderLanes(previewOnly=false){let shell=$('reelLanes');let count=qty;shell.classList.toggle('multi',count>=5);shell.innerHTML='';if(previewOnly){let arr=items.filter(x=>x.caseId===state.caseId).slice(0,6);shell.innerHTML=arr.map(x=>'<div class="lane"><div class="laneWindow"><div class="laneTrack">'+arr.map(y=>reelCard(y)).join('')+'</div></div></div>').join('');return}}
@@ -377,7 +388,7 @@ const AUTH_KEY='burmaldep-session-token';
 let currentPlayer=null;
 let feedSeen=new Set();
 let inventorySyncTimer=null;
-function inventoryImageUrl(item){const url=item.megaBoss?megaBossPhoto:photos[item.photo];return typeof url==='string'&&/^https:\/\//i.test(url)?url:null}
+function inventoryImageUrl(item){const url=item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return typeof url==='string'&&/^https:\/\//i.test(url)?url:null}
 function inventoryPayload(){return state.inventory.slice(0,6).map(id=>{const item=items[id];return item?{item_id:item.id,item_name:item.name,item_image:inventoryImageUrl(item),item_value:item.value,rarity:item.rarity}:null}).filter(Boolean)}
 function scheduleInventorySync(){if(!currentPlayer)return;clearTimeout(inventorySyncTimer);inventorySyncTimer=setTimeout(()=>syncAccountInventory().catch(e=>console.warn('Не удалось сохранить инвентарь:',e.message)),350)}
 async function syncAccountInventory(){if(!currentPlayer)return;await apiRequest('inventory','POST',{items:inventoryPayload()});}
