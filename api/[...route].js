@@ -24,6 +24,7 @@ async function ensureSchema() {
     )`);
     await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS item_value integer NOT NULL DEFAULT 0");
     await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS rarity text");
+    await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS event_type text NOT NULL DEFAULT 'legacy_drop'");
     await pool.query("CREATE INDEX IF NOT EXISTS activity_events_created_idx ON activity_events(created_at DESC)");
   })();
   return schemaReady;
@@ -107,8 +108,19 @@ export default async function handler(req, res) {
         ORDER BY p.id,s.last_seen_at DESC LIMIT 30`);
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
       const events = await pool.query(`SELECT id,username,avatar_url,item_name,item_image,case_title,item_value,rarity,created_at
-        FROM activity_events ORDER BY created_at DESC LIMIT 30`);
+        FROM activity_events WHERE event_type = 'upgrade_visit' ORDER BY created_at DESC LIMIT 30`);
       return send(res,200,{players:rows.rows,online:count.rows[0].online,events:events.rows});
+    }
+
+    if (path === "activity-view" && req.method === "POST") {
+      const recent = await pool.query("SELECT id FROM activity_events WHERE player_id=$1 AND event_type='upgrade_visit' AND created_at>now()-interval '10 minutes' LIMIT 1",[user.id]);
+      if (!recent.rowCount) {
+        await pool.query(
+          "INSERT INTO activity_events (player_id,username,avatar_url,item_name,event_type) VALUES ($1,$2,$3,$4,'upgrade_visit')",
+          [user.id,user.username,user.avatar_url,"Перешёл в раздел «Апгрейдер»"]
+        );
+      }
+      return send(res,201,{ok:true});
     }
 
     if (path === "activity" && req.method === "POST") {
