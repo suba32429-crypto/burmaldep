@@ -26,6 +26,18 @@ async function ensureSchema() {
     await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS rarity text");
     await pool.query("ALTER TABLE activity_events ADD COLUMN IF NOT EXISTS event_type text NOT NULL DEFAULT 'legacy_drop'");
     await pool.query("CREATE INDEX IF NOT EXISTS activity_events_created_idx ON activity_events(created_at DESC)");
+    await pool.query(`CREATE TABLE IF NOT EXISTS player_inventory_items (
+      id bigserial PRIMARY KEY,
+      player_id uuid NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      slot integer NOT NULL,
+      item_name text NOT NULL,
+      item_image text,
+      item_value integer NOT NULL DEFAULT 0,
+      rarity text,
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE(player_id,slot)
+    )`);
+    await pool.query("CREATE INDEX IF NOT EXISTS player_inventory_items_updated_idx ON player_inventory_items(updated_at DESC)");
   })();
   return schemaReady;
 }
@@ -109,7 +121,29 @@ export default async function handler(req, res) {
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
       const events = await pool.query(`SELECT id,username,avatar_url,item_name,item_image,case_title,item_value,rarity,created_at
         FROM activity_events WHERE event_type = 'upgrade_visit' ORDER BY created_at DESC LIMIT 30`);
-      return send(res,200,{players:rows.rows,online:count.rows[0].online,events:events.rows});
+      const inventoryItems = await pool.query(`SELECT i.id,i.item_name,i.item_image,i.item_value,i.rarity,i.updated_at,
+        p.username,p.avatar_url
+        FROM player_inventory_items i JOIN players p ON p.id=i.player_id
+        ORDER BY i.updated_at DESC,i.id DESC LIMIT 30`);
+      return send(res,200,{players:rows.rows,online:count.rows[0].online,events:events.rows,inventoryItems:inventoryItems.rows});
+    }
+
+    if (path === "inventory" && req.method === "POST") {
+      const items = Array.isArray(req.body?.items) ? req.body.items.slice(0,6) : [];
+      await pool.query("DELETE FROM player_inventory_items WHERE player_id=$1",[user.id]);
+      for (let slot=0;slot<items.length;slot++) {
+        const item=items[slot] || {};
+        const itemName=String(item.item_name || "").trim().slice(0,120);
+        const itemImage=String(item.item_image || "").trim().slice(0,2048);
+        const itemValue=Math.max(0,Math.min(100000000,Math.trunc(Number(item.item_value)||0)));
+        const rarity=String(item.rarity || "").trim().slice(0,32);
+        if (!itemName || (itemImage && !/^https:\/\//i.test(itemImage))) continue;
+        await pool.query(
+          "INSERT INTO player_inventory_items (player_id,slot,item_name,item_image,item_value,rarity) VALUES ($1,$2,$3,$4,$5,$6)",
+          [user.id,slot,itemName,itemImage || null,itemValue,rarity || null]
+        );
+      }
+      return send(res,200,{ok:true,shown:items.length});
     }
 
     if (path === "activity-view" && req.method === "POST") {
