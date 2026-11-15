@@ -75,7 +75,6 @@
 .upgradeSourcePick .upImg img{width:100%;height:100%;object-fit:cover;display:block}
 .upgradeSourcePick .upInfo{min-width:0}.upgradeSourcePick .upInfo b{display:block;font-size:9px;line-height:1.25;overflow-wrap:anywhere}.upgradeSourcePick .upInfo small{display:block;color:var(--rarity);font-size:9px;font-weight:850;margin-top:3px}.upgradeSourcePick .upInfo em{display:block;color:var(--gold);font-size:9px;font-style:normal;margin-top:2px}
 .upgradePlaceholder{padding:25px 12px;text-align:center;color:#a79dbb;border:1px dashed #49375f;border-radius:9px;font-size:11px;line-height:1.5}
-.upgradePercentBox{display:flex;flex-direction:column;align-items:center}.upgradePercentBox>.upgradeBoxHead,.upgradePercentBox>.upgradeRing,.upgradePercentBox>.upgradePercents,.upgradePercentBox>.upgradeMath{width:100%}.upgradePercentBox .upgradeDo{width:min(100%,260px);align-self:center;margin:12px auto 0}.upgradeSourcePick:disabled,.upgradePercents button:disabled,.upgradeTargetSelect:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
 .upgradeRing{position:relative;isolation:isolate;z-index:0;width:158px;height:158px;margin:19px auto 17px}
 .upgradeRing svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible;pointer-events:none}
 .upgradeRingTrack,.upgradeRingArc{fill:none;stroke-width:11}
@@ -85,12 +84,10 @@
 .upgradeRingCenter b{font-size:31px;font-weight:950;color:#fff;text-shadow:0 0 16px #9e49ff88}
 .upgradeRingCenter small{margin-top:2px;font-size:8px;letter-spacing:1px;color:#a99dbb;font-weight:900}
 .upgradePercents{position:relative;z-index:50;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;isolation:isolate}
-.upgradePercents button{appearance:none;-webkit-appearance:none;box-sizing:border-box;display:grid;place-items:center;width:100%;min-width:0;height:48px;min-height:48px;margin:0;padding:10px 6px;position:relative;z-index:51;border:1px solid #49345f;border-radius:8px;background:#171326;color:#d5c7e9;font-weight:900;font-size:14px;line-height:1.2;text-align:center;cursor:pointer;transition:border-color .15s,background .15s,color .15s;pointer-events:auto;touch-action:manipulation;transform:none;float:none}
+.upgradePercents button{appearance:none;-webkit-appearance:none;box-sizing:border-box;display:grid;place-items:center;width:100%;min-width:0;height:49px;min-height:49px;margin:0;padding:10px 6px;position:relative;z-index:51;border:2px solid #7650a1;border-radius:8px;background:linear-gradient(145deg,#241638,#171126);color:#f1e6ff;font-weight:950;font-size:15px;letter-spacing:.2px;line-height:1.2;text-align:center;cursor:pointer;transition:border-color .15s,background .15s,color .15s;pointer-events:auto;touch-action:manipulation;transform:none;float:none;box-shadow:inset 0 1px 0 #ffffff0b}
 .upgradePercents button *{pointer-events:none}
-.upgradePercents button:hover{border-color:#a45bff}.upgradePercents button.active{border-color:#c18aff;background:linear-gradient(100deg,#7021b9,#48147d);color:white;box-shadow:0 0 14px #8b20ff33}
-.upgradePercents button.upgradePercentMain{height:49px;min-height:49px;border:2px solid #7650a1;background:linear-gradient(145deg,#241638,#171126);color:#f1e6ff;font-size:15px;font-weight:950;letter-spacing:.2px;box-shadow:inset 0 1px 0 #ffffff0b}
-.upgradePercents button.upgradePercentMain:hover{border-color:#c18aff;background:linear-gradient(145deg,#392052,#211432)}
-.upgradePercents button.upgradePercentMain.active{border-color:#d2a2ff;background:linear-gradient(120deg,#792ac0,#4b187d);box-shadow:0 0 0 2px #a45bff22,0 0 18px #8b20ff44}
+.upgradePercents button:hover{border-color:#c18aff;background:linear-gradient(145deg,#392052,#211432)}
+.upgradePercents button.active{border-color:#d2a2ff;background:linear-gradient(120deg,#792ac0,#4b187d);color:white;box-shadow:0 0 0 2px #a45bff22,0 0 18px #8b20ff44}
 .upgradeMath{margin-top:10px;padding:9px;border-radius:8px;background:#171326;color:#aaa0bb;font-size:10px;line-height:1.45;text-align:center}
 .upgradeTargetSelect{width:100%;padding:9px;background:#171326;border:1px solid #584077;border-radius:8px;color:#f5f1ff;margin:0 0 10px;outline:none;font-size:10px}
 .upgradeTargetCard{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid #583b7d;border-radius:10px;background:linear-gradient(120deg,#241638,#151020)}
@@ -194,10 +191,10 @@
     <div class="upgradeRingCenter"><b id="upgradePercentValue">—</b><small id="upgradePercentCaption">ВЫБЕРИ ПРЕДМЕТ</small></div>
    </div>
    <div class="upgradePercents">
+    <button type="button" data-up-percent="75">75%</button>
+    <button type="button" data-up-percent="50">50%</button>
     <button type="button" data-up-percent="30">30%</button>
     <button type="button" data-up-percent="10">10%</button>
-    <button type="button" class="upgradePercentMain" data-up-percent="75">75%</button>
-    <button type="button" class="upgradePercentMain" data-up-percent="50">50%</button>
    </div>
    <button id="upgradeDo" class="upgradeDo" disabled="">Запустить апгрейд</button>
    <div class="upgradeMath" id="upgradeMath">Процент рассчитывается автоматически по стоимости выбранных предметов.</div>
