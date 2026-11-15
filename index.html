@@ -382,14 +382,14 @@ async function loadCurrentPlayer(){
 function renderOnlinePlayers(players){
  const root=$('onlinePlayers');if(!root)return;
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
- root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\\'none\\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
+ root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
 }
 function renderSharedFeed(events){
  const root=$('liveFeed');if(!root)return;
  if(!events.length){root.innerHTML='<div class="feedEmpty">Пока никто не открывал кейсы. Будь первым!</div>';return}
  const incoming=events.filter(e=>!feedSeen.has(String(e.id)));
  events.forEach(e=>feedSeen.add(String(e.id)));
- root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><img class="feedItemImg" src="'+esc(e.item_image||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><div class="feedCopy"><b>'+esc(e.username)+' выбил(а)</b><small>'+esc(e.item_name)+(e.case_title?' · '+esc(e.case_title):'')+'</small><em>'+Number(e.item_value||0).toLocaleString('ru-RU')+' БК · '+esc(e.rarity||'Предмет')+'</em></div></article>').join('');
+ root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><img class="feedItemImg" src="'+esc(e.item_image||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedCopy"><b>'+esc(e.username)+' выбил(а)</b><small>'+esc(e.item_name)+(e.case_title?' · '+esc(e.case_title):'')+'</small><em>'+Number(e.item_value||0).toLocaleString('ru-RU')+' БК · '+esc(e.rarity||'Предмет')+'</em></div></article>').join('');
  if(incoming.length)root.scrollTop=0;
 }
 async function publishDropEvents(winners,caseTitle){
