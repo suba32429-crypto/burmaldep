@@ -90,7 +90,7 @@
 .feedPanel{background:linear-gradient(145deg,#171326,#100d1a);border:1px solid #392957;border-radius:13px;padding:11px;margin-bottom:11px;min-width:0}
 .feedHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;font-weight:950;color:#eee4ff}
 .onlinePill{font-size:10px;color:#a9ffcf;background:#163124;border:1px solid #28583f;border-radius:20px;padding:4px 8px;white-space:nowrap}
-.liveFeed{display:flex;flex-direction:column;gap:7px;max-height:360px;overflow:auto;overflow-anchor:none;padding:2px 3px 2px 0}.leftFeedPanel{padding:9px}.leftFeedPanel .feedHead{font-size:12px}.leftFeedPanel .feedEvent{grid-template-columns:25px minmax(0,1fr);gap:6px;padding:7px}.leftFeedPanel .feedAvatar{width:25px;height:25px}.leftFeedPanel .feedCopy small{white-space:normal;line-height:1.25}.leftFeedPanel .feedCopy em{display:none}
+.liveFeed{display:flex;flex-direction:column;gap:7px;max-height:360px;overflow:auto;overflow-anchor:none;padding:2px 3px 2px 0}.leftFeedPanel{padding:9px}.leftFeedPanel .feedHead{font-size:12px}.leftFeedPanel .feedEvent{grid-template-columns:25px minmax(0,1fr);gap:6px;padding:7px}.leftFeedPanel .feedAvatar{width:25px;height:25px}.leftFeedPanel .feedCopy small{white-space:normal;line-height:1.25}.leftFeedPanel .feedCopy em{display:none}.leftFeedPanel .playerItemRow{grid-template-columns:42px minmax(0,1fr);gap:8px}.feedItemImage{width:42px;height:42px;object-fit:cover;border-radius:7px;background:#21172d;border:1px solid #49375f}.leftFeedPanel .playerItemRow .feedCopy em{display:block;color:var(--gold);font-style:normal;font-size:9px;margin-top:3px}
 .feedEvent{display:grid;grid-template-columns:30px 42px minmax(0,1fr);align-items:center;gap:8px;padding:8px;background:#1b1528;border:1px solid #352447;border-radius:9px;animation:feedDrop .62s cubic-bezier(.2,.8,.2,1) both}
 @keyframes feedDrop{0%{opacity:0;transform:translateY(-24px);clip-path:inset(0 0 100% 0)}65%{opacity:1;clip-path:inset(0 0 0 0)}100%{opacity:1;transform:translateY(0);clip-path:inset(0 0 0 0)}}
 .feedAvatar{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#39234e;border:1px solid #8452ae}
@@ -132,7 +132,7 @@
 <div class="app">
 <aside class="left"><div class="profile"><img src="./mellstroy-andrey-burim_82.jpg" alt="Портрет для оформления"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
 <div class="onlinePanel"><div class="onlineHead"><span>🟢 Сейчас в игре</span><span class="onlinePill">Онлайн: <b id="onlineCount">0</b></span></div><div class="onlinePlayers" id="onlinePlayers"><div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div></div></div>
-<div class="feedPanel leftFeedPanel"><div class="feedHead"><span>📡 Активность игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Реальные действия появятся здесь.</div></div></div>
+<div class="feedPanel leftFeedPanel"><div class="feedHead"><span>Предметы игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Реальные предметы появятся здесь.</div></div></div>
 <div class="balance"><div class="balanceLabel">Бурмалдкойны · БК</div><div class="balanceRow"><span class="coin">🟡</span><div class="balanceValue" id="balance">820&nbsp;328</div></div><div class="displayNote">Виртуальный баланс · без денежных операций</div></div></aside>
 <main class="center">
 <header class="topnav"><nav class="tabs"><button class="tab active" data-page="cases">1 · Кейсы</button><button class="tab" data-page="inventory">2 · Инвентарь</button><button class="tab" data-page="upgrade">3 · Апгрейдер</button><button class="tab" data-page="author">Автор: Субхан Ганбаров</button></nav><div class="accountTools"><button class="accountBtn" id="authOpen">Войти</button><span class="accountName" id="accountName"></span><button class="avatarBtn" id="avatarOpen" title="Установить аватар">👤</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><div class="topBalance">🟡 <span id="topBalance">820&nbsp;328</span> БК</div></header>
@@ -383,13 +383,14 @@ function renderOnlinePlayers(players){
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
  root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
 }
-function renderSharedFeed(events){
+function renderPlayerItems(items){
  const root=$('liveFeed');if(!root)return;
- if(!events.length){root.innerHTML='<div class="feedEmpty">Пока нет новых действий игроков.</div>';return}
- const incoming=events.filter(e=>!feedSeen.has(String(e.id)));
- events.forEach(e=>feedSeen.add(String(e.id)));
- root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedCopy"><b>'+esc(e.username)+'</b><small>'+esc(e.item_name)+'</small></div></article>').join('');
- if(incoming.length)root.scrollTop=0;
+ if(!items.length){root.innerHTML='<div class="feedEmpty">Пока нет предметов, сохранённых игроками.</div>';return}
+ root.innerHTML=items.map((item,i)=>{
+  const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">':'';
+  const value=Number(item.item_value)>0?'<em>'+money(Number(item.item_value))+' БК</em>':'';
+  return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+'</small>'+value+'</div></article>';
+ }).join('');
 }
 let upgradeVisitPublished=false;
 async function publishUpgradeVisit(){
@@ -404,7 +405,7 @@ async function refreshSharedData(){
   const data=await apiRequest('feed');
   $('onlineCount').textContent=String(data.online??0);
   renderOnlinePlayers(data.players||[]);
-  renderSharedFeed(data.events||[]);
+  renderPlayerItems(data.inventoryItems||[]);
  }catch(e){if(e.message.includes('Войди')){currentPlayer=null;localStorage.removeItem(AUTH_KEY);updateAccountUI();}}
 }
 async function pingPresence(){
@@ -413,7 +414,7 @@ async function pingPresence(){
  catch(e){}
 }
 $('authOpen').addEventListener('click',()=>{
- if(currentPlayer){save();updateBalance();localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть общую ленту.</div>';notify('Ты вышел из аккаунта');}
+ if(currentPlayer){save();updateBalance();localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть предметы игроков.</div>';notify('Ты вышел из аккаунта');}
  else openAuth();
 });
 function openProfile(){
