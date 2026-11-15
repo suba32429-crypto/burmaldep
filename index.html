@@ -344,6 +344,7 @@ function getUpgradeCandidates(source,percent){
 }
 function renderUpgrade(){
  if(upgradeSpinning)return;
+ document.querySelectorAll('[data-up-percent]').forEach(button=>{button.disabled=upgradeSpinning});
  const list=$('upgradeSourceList');
  $('upgradeSourceCount').textContent=state.inventory.length+' в инвентаре';
  if(!state.inventory.length){
