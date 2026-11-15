@@ -415,6 +415,16 @@ $('upgradeDo').addEventListener('click',performUpgrade);
 
 let upgradeCatalogLimit=48;
 let upgradeCatalogSelected=null;
+function catalogArt(item){
+ const id=Number(item.id)||0,seed=(id*2654435761)>>>0;
+ const hue1=seed%360,hue2=(hue1+65+(seed%90))%360,hue3=(hue1+180)%360;
+ const shape=id%4,accent=id%6;
+ const bg='<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="hsl('+hue1+',78%,24%)"/><stop offset="1" stop-color="hsl('+hue2+',82%,9%)"/></linearGradient><radialGradient id="glow"><stop stop-color="hsl('+hue3+',95%,70%)" stop-opacity=".85"/><stop offset="1" stop-color="hsl('+hue3+',95%,45%)" stop-opacity="0"/></radialGradient></defs>';
+ const motif=shape===0?'<path d="M0 150 L160 0 320 150 160 300Z" fill="none" stroke="white" stroke-opacity=".13" stroke-width="3"/>':shape===1?'<circle cx="160" cy="145" r="112" fill="none" stroke="white" stroke-opacity=".15" stroke-width="2"/><circle cx="160" cy="145" r="82" fill="none" stroke="white" stroke-opacity=".12" stroke-width="2"/>':shape===2?'<path d="M0 55H320M0 95H320M0 205H320M0 245H320" stroke="white" stroke-opacity=".12" stroke-width="2"/>':'<path d="M35 0V300M85 0V300M235 0V300M285 0V300" stroke="white" stroke-opacity=".12" stroke-width="2"/>';
+ const accessory=accent===0?'<path d="M102 104Q160 48 218 104L208 125H112Z" fill="hsl('+hue3+',90%,62%)"/>':accent===1?'<path d="M112 118Q160 95 208 118" fill="none" stroke="hsl('+hue3+',95%,70%)" stroke-width="9"/>':accent===2?'<path d="M112 151H208" stroke="hsl('+hue3+',95%,70%)" stroke-width="8"/>':accent===3?'<path d="M115 100L160 72 205 100" fill="none" stroke="hsl('+hue3+',95%,70%)" stroke-width="8"/>':accent===4?'<circle cx="160" cy="105" r="48" fill="none" stroke="hsl('+hue3+',95%,70%)" stroke-width="7"/>':'<path d="M112 92L160 65 208 92 196 112H124Z" fill="hsl('+hue3+',95%,70%)"/>';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300">'+bg+'<rect width="320" height="300" rx="24" fill="url(#g)"/><circle cx="'+(45+seed%230)+'" cy="'+(30+(seed>>>8)%220)+'" r="105" fill="url(#glow)"/>'+motif+'<path d="M58 300Q67 205 160 205Q253 205 262 300Z" fill="hsl('+hue2+',45%,18%)" stroke="hsl('+hue3+',85%,66%)" stroke-opacity=".8" stroke-width="4"/><ellipse cx="160" cy="151" rx="'+(54+id%9)+'" ry="'+(67+(id*3)%11)+'" fill="hsl('+((hue1+28)%360)+',34%,72%)"/>'+accessory+'<path d="M137 151h10m26 0h10" stroke="#20202a" stroke-width="7" stroke-linecap="round"/><path d="M145 181Q160 '+(185+id%9)+' 175 181" fill="none" stroke="#633b42" stroke-width="4" stroke-linecap="round"/><path d="M20 20h42M20 20v42M300 280h-42M300 280v-42" stroke="hsl('+hue3+',95%,72%)" stroke-width="4" opacity=".8"/><text x="160" y="276" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="white" fill-opacity=".82">BURMALDEP • #'+id+'</text></svg>';
+ return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+}
 function renderUpgradeCatalog(){
  const root=$('upgradeCatalogGrid');if(!root)return;
  const query=($('upgradeCatalogSearch')?.value||'').trim().toLocaleLowerCase('ru');
@@ -430,7 +440,7 @@ function selectUpgradeCatalogItem(id){
  const item=items.find(x=>x.id===id);if(!item)return;
  upgradeCatalogSelected=id;
  const preview=$('upgradeCatalogPreview');
- preview.innerHTML='<img src="'+esc(item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo])+'" alt="'+esc(item.name)+'" style="--rarity:'+item.color+'"><div><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+'</small><strong>'+money(item.value)+' БК</strong></div>';
+ preview.innerHTML='<img src="'+esc(catalogArt(item))+'" alt="'+esc(item.name)+'" style="--rarity:'+item.color+'"><div><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+'</small><strong>'+money(item.value)+' БК</strong></div>';
  renderUpgradeCatalog();
 }
 $('upgradeCatalogSearch').addEventListener('input',()=>{upgradeCatalogLimit=48;renderUpgradeCatalog()});
