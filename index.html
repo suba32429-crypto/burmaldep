@@ -51,6 +51,7 @@
 .upgradeSourcePick .upImg img{width:100%;height:100%;object-fit:cover;display:block}
 .upgradeSourcePick .upInfo{min-width:0}.upgradeSourcePick .upInfo b{display:block;font-size:9px;line-height:1.25;overflow-wrap:anywhere}.upgradeSourcePick .upInfo small{display:block;color:var(--rarity);font-size:9px;font-weight:850;margin-top:3px}.upgradeSourcePick .upInfo em{display:block;color:var(--gold);font-size:9px;font-style:normal;margin-top:2px}
 .upgradePlaceholder{padding:25px 12px;text-align:center;color:#a79dbb;border:1px dashed #49375f;border-radius:9px;font-size:11px;line-height:1.5}
+.upgradePercentBox{display:flex;flex-direction:column;align-items:center}.upgradePercentBox>.upgradeBoxHead,.upgradePercentBox>.upgradeRing,.upgradePercentBox>.upgradePercents,.upgradePercentBox>.upgradeMath{width:100%}.upgradePercentBox .upgradeDo{width:min(100%,260px);align-self:center;margin:12px auto 0}.upgradeSourcePick:disabled,.upgradePercents button:disabled,.upgradeTargetSelect:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
 .upgradeRing{position:relative;width:158px;height:158px;margin:19px auto 17px}
 .upgradeRing svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
 .upgradeRingTrack,.upgradeRingArc{fill:none;stroke-width:11}
@@ -111,7 +112,7 @@
 .authHint{font-size:11px;color:#c8b4dd;min-height:16px;margin-top:8px}
 .profileAvatarPreview{width:76px;height:76px;border-radius:50%;object-fit:cover;display:block;margin:8px auto 12px;border:2px solid #8452ae;background:#30203f}.profileModalActions{display:flex;gap:8px;margin-top:10px}.profileModalActions button{flex:1;padding:11px;border:0;border-radius:8px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer}
 .playerViewModal{width:min(620px,calc(100vw - 32px));max-height:85vh;overflow:auto;min-width:0}
-.playerViewModal #playerViewInventory{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:start}
+.playerViewModal #playerViewInventory{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:start};max-height:54vh;overflow-y:auto;overscroll-behavior:contain;padding:0 7px 8px 0;scrollbar-gutter:stable
 .playerViewModal #playerViewInventory .invCard{min-width:0;padding:9px;display:flex;flex-direction:column;gap:6px}
 .playerViewModal #playerViewInventory .invCard img{display:block;width:100%;height:112px;object-fit:contain;border-radius:7px;background:#21172d}
 .playerViewModal #playerViewInventory .invCard b{overflow-wrap:anywhere;min-height:0}
@@ -264,6 +265,18 @@ const bonusItems=[
 ];
 items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});
 for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}
+const eliteItems=[
+ {name:'Король Бурмалдепа',value:150000},
+ {name:'Меллстройский титан',value:250000},
+ {name:'Бурма из легенд',value:350000},
+ {name:'Золотой хаос',value:450000},
+ {name:'Император эфира',value:550000},
+ {name:'Бурмальный феномен',value:650000},
+ {name:'Повелитель стрима',value:750000},
+ {name:'Абсолютный Мелл',value:900000},
+ {name:'Бурмалда: финальная форма',value:1000000}
+];
+for(const item of eliteItems){items.push({id:items.length,caseId:-1,...item,rarity:'Секретный',color:rarityColors[4],photo:0,placeholder:true,elite:true})}
 let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
@@ -275,7 +288,7 @@ function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');c
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
 function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+esc(fallbackSrc)+'\'">'}
-function itemImg(item){const url=item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
+function itemImg(item){const url=item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
 function itemCard(item,inventoryIndex){return '<article class="invCard" style="--rarity:'+item.color+'"><div class="bigImg">'+itemImg(item)+'</div><div class="details"><b>'+esc(item.name)+'</b><small>'+item.rarity+'</small><strong>'+money(item.value)+' БК</strong><button onclick="sellOne('+inventoryIndex+')">Продать за '+money(item.value)+' БК</button></div></article>'}
 function reelCard(item,selected=false){return '<div class="reelCard '+(selected?'selected':'')+'" style="--rarity:'+item.color+'">'+itemImg(item)+'<strong style="color:'+item.color+'">'+esc(item.name)+'</strong></div>'}
 function renderLanes(previewOnly=false){let shell=$('reelLanes');let count=qty;shell.classList.toggle('multi',count>=5);shell.innerHTML='';if(previewOnly){let arr=items.filter(x=>x.caseId===state.caseId).slice(0,6);shell.innerHTML=arr.map(x=>'<div class="lane"><div class="laneWindow"><div class="laneTrack">'+arr.map(y=>reelCard(y)).join('')+'</div></div></div>').join('');return}}
@@ -298,6 +311,7 @@ function getUpgradeCandidates(source,percent){
  return result;
 }
 function renderUpgrade(){
+ if(upgradeSpinning)return;
  const list=$('upgradeSourceList');
  $('upgradeSourceCount').textContent=state.inventory.length+' в инвентаре';
  if(!state.inventory.length){
@@ -305,9 +319,9 @@ function renderUpgrade(){
   $('upgradeTargetArea').innerHTML='<div class="upgradePlaceholder">Здесь появится целевой предмет.</div>';
   $('upgradeDo').disabled=true;$('upgradeStatus').textContent='Сначала добавь предметы в инвентарь.';$('upgradePercentValue').textContent='—';$('upgradePercentCaption').textContent='НЕТ ПРЕДМЕТА';$('upgradeRingArc').style.strokeDashoffset='376.99';return;
  }
- list.innerHTML=state.inventory.map((id,index)=>{const x=items[id],selected=index===upgradeSourceIndex;return '<button type="button" class="upgradeSourcePick '+(selected?'selected':'')+'" data-up-source="'+index+'" style="--rarity:'+x.color+'"><span class="upImg">'+itemImg(x)+'</span><span class="upInfo"><b>'+esc(x.name)+'</b><small>'+esc(x.rarity)+'</small><em>'+money(x.value)+' БК</em></span></button>'}).join('');
+ list.innerHTML=state.inventory.map((id,index)=>{const x=items[id],selected=index===upgradeSourceIndex;return '<button type="button" class="upgradeSourcePick '+(selected?'selected':'')+'" data-up-source="'+index+'" '+(upgradeSpinning?'disabled':'')+' style="--rarity:'+x.color+'"><span class="upImg">'+itemImg(x)+'</span><span class="upInfo"><b>'+esc(x.name)+'</b><small>'+esc(x.rarity)+'</small><em>'+money(x.value)+' БК</em></span></button>'}).join('');
  list.querySelectorAll('[data-up-source]').forEach(button=>button.addEventListener('click',()=>{upgradeSourceIndex=Number(button.dataset.upSource);upgradeTargetId=null;renderUpgrade()}));
- document.querySelectorAll('[data-up-percent]').forEach(button=>button.classList.toggle('active',Number(button.dataset.upPercent)===upgradePercent));
+ document.querySelectorAll('[data-up-percent]').forEach(button=>{button.classList.toggle('active',Number(button.dataset.upPercent)===upgradePercent);button.disabled=upgradeSpinning});
  const source=getUpgradeSource(),area=$('upgradeTargetArea'),confirm=$('upgradeDo');
  if(!source){$('upgradeStatus').textContent='Выбери один предмет из инвентаря.';area.innerHTML='<div class="upgradePlaceholder">Нажми на свой предмет слева.</div>';confirm.disabled=true;$('upgradePercentValue').textContent='—';$('upgradePercentCaption').textContent='ВЫБЕРИ ПРЕДМЕТ';$('upgradeRingArc').style.strokeDashoffset='376.99';return}
  const desired=source.value*1.5/(upgradePercent/100),candidates=getUpgradeCandidates(source,upgradePercent);
@@ -315,7 +329,7 @@ function renderUpgrade(){
  if(!candidates.some(x=>x.item.id===Number(upgradeTargetId)))upgradeTargetId=candidates[0].item.id;
  const chosen=candidates.find(x=>x.item.id===Number(upgradeTargetId))||candidates[0],target=chosen.item,actual=Math.min(92,source.value/target.value*150);
  const options=candidates.map(x=>'<option value="'+x.item.id+'" '+(x.item.id===target.id?'selected':'')+'>'+esc(x.item.name)+' · '+money(x.item.value)+' БК · '+x.actual.toFixed(1)+'%</option>').join('');
- area.innerHTML='<select class="upgradeTargetSelect" id="upgradeTargetSelect">'+options+'</select><div class="upgradeTargetCard" style="--rarity:'+target.color+'"><div class="targetImg">'+itemImg(target)+'</div><div><b>'+esc(target.name)+'</b><small>'+esc(target.rarity)+'</small><strong>'+money(target.value)+' БК</strong></div></div><div class="upgradeRatio">Цена твоего предмета: <strong>'+money(source.value)+' БК</strong><br>Цена цели: <strong>'+money(target.value)+' БК</strong><br><span class="actual">'+actual.toFixed(1)+'%</span> — шанс выигрыша<br>Цель для кнопки '+upgradePercent+'%: около <strong>'+money(desired)+' БК</strong></div>';
+ area.innerHTML='<select class="upgradeTargetSelect" id="upgradeTargetSelect" '+(upgradeSpinning?'disabled':'')+'>'+options+'</select><div class="upgradeTargetCard" style="--rarity:'+target.color+'"><div class="targetImg">'+itemImg(target)+'</div><div><b>'+esc(target.name)+'</b><small>'+esc(target.rarity)+'</small><strong>'+money(target.value)+' БК</strong></div></div><div class="upgradeRatio">Цена твоего предмета: <strong>'+money(source.value)+' БК</strong><br>Цена цели: <strong>'+money(target.value)+' БК</strong><br><span class="actual">'+actual.toFixed(1)+'%</span> — шанс выигрыша<br>Цель для кнопки '+upgradePercent+'%: около <strong>'+money(desired)+' БК</strong></div>';
  $('upgradeTargetSelect').addEventListener('change',e=>{upgradeTargetId=Number(e.target.value);renderUpgrade()});
  $('upgradePercentValue').textContent=actual.toFixed(1)+'%';$('upgradePercentCaption').textContent='ШАНС ВЫИГРЫША';
  $('upgradeRingArc').style.strokeDashoffset=String(376.99*(1-Math.max(0,Math.min(100,actual))/100));
@@ -323,7 +337,7 @@ function renderUpgrade(){
  $('upgradeStatus').textContent='Выбран предмет '+source.name+'. Цель подобрана по шансу. Выиграл: получаешь цель. Проиграл: предмет сгорает. Всё понарошку.';
  confirm.disabled=false;
 }
-function performUpgrade(){
+async function performUpgrade(){
  if(upgradeSpinning)return;
  const source=getUpgradeSource();
  if(!source){notify('Сначала выбери предмет из инвентаря');return}
@@ -336,21 +350,29 @@ function performUpgrade(){
  const base=Math.floor(upgradeSpinAngle/360)*360;
  let finishAngle=base+360*5+landingAngle;
  if(finishAngle<=upgradeSpinAngle)finishAngle+=360*5;
+ const lostName=source.name;
+ const sourceIndex=upgradeSourceIndex;
  upgradeSpinning=true;
  const button=$('upgradeDo'),pointer=$('upgradePointerOrbit');
- button.disabled=true;button.textContent='СТРЕЛКА КРУТИТСЯ…';
+ button.disabled=true;button.textContent='СОХРАНЯЕМ РЕЗУЛЬТАТ…';
+ document.querySelectorAll('[data-up-source],[data-up-percent],#upgradeTargetSelect').forEach(control=>{control.disabled=true});
+ state.inventory.splice(sourceIndex,1);
+ if(win)state.inventory.unshift(target.id);
+ upgradeSourceIndex=null;upgradeTargetId=null;
+ try{localStorage.setItem(UPGRADE_SYNC_KEY,'1')}catch(e){}
+ save();renderInventoryPeek();
+ if(currentPlayer){
+  clearTimeout(inventorySyncTimer);
+  syncAccountInventory().then(()=>localStorage.removeItem(UPGRADE_SYNC_KEY)).catch(e=>console.warn('Результат апгрейда сохранён локально; синхронизация повторится при загрузке:',e.message));
+ }
+ button.textContent='СТРЕЛКА КРУТИТСЯ…';
  pointer.classList.add('spinning');
  requestAnimationFrame(()=>requestAnimationFrame(()=>{pointer.style.transform='rotate('+finishAngle+'deg)'}));
  setTimeout(()=>{
   upgradeSpinAngle=finishAngle;
   upgradeSpinning=false;
   pointer.classList.remove('spinning');
-  state.inventory.splice(upgradeSourceIndex,1);
-  if(win)state.inventory.unshift(target.id);
-  save();renderInventoryPeek();
   button.textContent='Запустить апгрейд';
-  const lostName=source.name;
-  upgradeSourceIndex=null;upgradeTargetId=null;
   renderUpgrade();
   notify(win?'Выиграл! '+target.name+' добавлен.':'Не повезло: '+lostName+' сгорел.');
  },3450);
@@ -385,14 +407,15 @@ $('selectedCaseName').textContent='Кейс: '+cases[state.caseId].name;$('selec
 /* Shared player accounts, avatars, online presence and feed */
 const API_BASE='/api/';
 const AUTH_KEY='burmaldep-session-token';
+const UPGRADE_SYNC_KEY='burmaldep-upgrade-sync-pending';
 let currentPlayer=null;
 let feedSeen=new Set();
 let inventorySyncTimer=null;
-function inventoryImageUrl(item){const url=item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return typeof url==='string'&&/^https:\/\//i.test(url)?url:null}
-function inventoryPayload(){return state.inventory.slice(0,6).map(id=>{const item=items[id];return item?{item_id:item.id,item_name:item.name,item_image:inventoryImageUrl(item),item_value:item.value,rarity:item.rarity}:null}).filter(Boolean)}
+function inventoryImageUrl(item){const url=item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return typeof url==='string'&&/^https:\/\//i.test(url)?url:null}
+function inventoryPayload(){return state.inventory.slice(0,200).map(id=>{const item=items[id];return item?{item_id:item.id,item_name:item.name,item_image:inventoryImageUrl(item),item_value:item.value,rarity:item.rarity}:null}).filter(Boolean)}
 function scheduleInventorySync(){if(!currentPlayer)return;clearTimeout(inventorySyncTimer);inventorySyncTimer=setTimeout(()=>syncAccountInventory().catch(e=>console.warn('Не удалось сохранить инвентарь:',e.message)),350)}
 async function syncAccountInventory(){if(!currentPlayer)return;await apiRequest('inventory','POST',{items:inventoryPayload()});}
-async function loadAccountInventory(){const data=await apiRequest('inventory');const saved=Array.isArray(data.items)?data.items:[];if(saved.length){state.inventory=saved.map(row=>{const id=Number(row.item_id);return Number.isInteger(id)&&items[id]?id:items.find(x=>x.name===row.item_name)?.id}).filter(id=>Number.isInteger(id));localStorage.setItem('burmaldep-live-state',JSON.stringify(state));}else if(state.inventory.length){await syncAccountInventory();}renderInventoryPeek();if($('page-inventory')?.classList.contains('active'))renderInventoryPage();}
+async function loadAccountInventory(){if(localStorage.getItem(UPGRADE_SYNC_KEY)==='1'){await syncAccountInventory();localStorage.removeItem(UPGRADE_SYNC_KEY);renderInventoryPeek();if($('page-inventory')?.classList.contains('active'))renderInventoryPage();return}const data=await apiRequest('inventory');const saved=Array.isArray(data.items)?data.items:[];if(saved.length){state.inventory=saved.map(row=>{const id=Number(row.item_id);return Number.isInteger(id)&&items[id]?id:items.find(x=>x.name===row.item_name)?.id}).filter(id=>Number.isInteger(id));localStorage.setItem('burmaldep-live-state',JSON.stringify(state));}else if(state.inventory.length){await syncAccountInventory();}renderInventoryPeek();if($('page-inventory')?.classList.contains('active'))renderInventoryPage();}
 function apiToken(){return localStorage.getItem(AUTH_KEY)||''}
 async function apiRequest(route,method='GET',body=null){
  const headers={'Content-Type':'application/json'};
