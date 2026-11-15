@@ -398,7 +398,7 @@ function renderOnlinePlayers(players){
 function renderSharedFeed(items){
  const root=$('liveFeed');if(!root)return;
  if(!items.length){root.innerHTML='<div class="feedEmpty">Пока никто не выставил предметы в витрину.</div>';return}
- root.innerHTML=items.map((item,i)=>'<article class="feedInventoryItem" style="animation-delay:'+Math.min(i,8)*55+'ms"><div class="feedInventoryTop"><img class="feedAvatar" src="'+esc(item.avatar_url||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><b>'+esc(item.username)+'</b></div><div class="feedInventoryBody"><img class="feedInventoryImage" src="'+esc(item.item_image||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><div class="feedInventoryCopy"><strong>'+esc(item.item_name)+'</strong><small>'+esc(item.rarity||'Предмет')+'</small><em>'+money(item.item_value||0)+' БК</em></div></div></article>').join('');
+ root.innerHTML=items.map((item,i)=>'<article class="feedInventoryItem" style="animation-delay:'+Math.min(i,8)*55+'ms"><div class="feedInventoryTop"><img class="feedAvatar" src="'+esc(item.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><b>'+esc(item.username)+'</b></div><div class="feedInventoryBody"><img class="feedInventoryImage" src="'+esc(item.item_image||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedInventoryCopy"><strong>'+esc(item.item_name)+'</strong><small>'+esc(item.rarity||'Предмет')+'</small><em>'+money(item.item_value||0)+' БК</em></div></div></article>').join('');
  root.scrollTop=0;
 }
 let inventorySyncTimer=null;
