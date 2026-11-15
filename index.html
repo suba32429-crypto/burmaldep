@@ -282,7 +282,36 @@ function renderUpgrade(){
  confirm.disabled=false;
 }
 function performUpgrade(){
- notify('Случайный апгрейдер временно отключён.');
+ if(upgradeSpinning)return;
+ const source=getUpgradeSource();
+ if(!source){notify('Сначала выбери предмет из инвентаря');return}
+ const target=items[Number(upgradeTargetId)];
+ if(!target||target.value<=source.value){notify('Подходящий предмет-цель не найден');return}
+ if(state.inventory[upgradeSourceIndex]!==source.id){notify('Инвентарь изменился. Выбери предмет заново.');upgradeSourceIndex=null;renderUpgrade();return}
+ const chance=Math.min(0.92,source.value/target.value*1.5);
+ const win=Math.random()<chance;
+ const landingAngle=win?(Math.random()*0.8+0.1)*chance*360:chance*360+(Math.random()*0.8+0.1)*(1-chance)*360;
+ const base=Math.floor(upgradeSpinAngle/360)*360;
+ let finishAngle=base+360*5+landingAngle;
+ if(finishAngle<=upgradeSpinAngle)finishAngle+=360*5;
+ upgradeSpinning=true;
+ const button=$('upgradeDo'),pointer=$('upgradePointerOrbit');
+ button.disabled=true;button.textContent='СТРЕЛКА КРУТИТСЯ…';
+ pointer.classList.add('spinning');
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{pointer.style.transform='rotate('+finishAngle+'deg)'}));
+ setTimeout(()=>{
+  upgradeSpinAngle=finishAngle;
+  upgradeSpinning=false;
+  pointer.classList.remove('spinning');
+  state.inventory.splice(upgradeSourceIndex,1);
+  if(win)state.inventory.unshift(target.id);
+  save();renderInventoryPeek();
+  button.textContent='Запустить апгрейд';
+  const lostName=source.name;
+  upgradeSourceIndex=null;upgradeTargetId=null;
+  renderUpgrade();
+  notify(win?'Выиграл! '+target.name+' добавлен.':'Не повезло: '+lostName+' сгорел.');
+ },3450);
 }
 document.querySelectorAll('[data-up-percent]').forEach(button=>button.addEventListener('click',()=>{if(upgradeSpinning)return;upgradePercent=Number(button.dataset.upPercent);upgradeTargetId=null;renderUpgrade()}));
 $('upgradeDo').addEventListener('click',performUpgrade);
