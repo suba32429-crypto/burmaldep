@@ -233,8 +233,8 @@ const bonusItems=[
  {name:'Корона императора',value:82000,rarity:'Секретный',color:rarityColors[4],photo:1},
  {name:'Абсолютный Босс',value:100000,rarity:'Секретный',color:'#ffd45f',photo:0,boss:true}
 ];
-for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}
-items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});let state={balance:12450,caseId:0,inventory:[],openingCount:0};
+items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});
+for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
