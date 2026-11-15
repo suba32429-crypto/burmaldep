@@ -104,6 +104,14 @@ export default async function handler(req, res) {
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
       return send(res,200,{players:rows.rows,online:count.rows[0].online});
     }
+    if (path === "username" && req.method === "POST") {
+      const username = String(req.body?.username || "").trim();
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return send(res,400,{error:"Ник: 3–20 символов, латиница, цифры или _"});
+      const taken = await pool.query("SELECT 1 FROM players WHERE lower(username)=lower($1) AND id<>$2 LIMIT 1",[username,user.id]);
+      if (taken.rowCount) return send(res,409,{error:"Такой ник уже занят"});
+      const changed = await pool.query("UPDATE players SET username=$1 WHERE id=$2 RETURNING username,avatar_url",[username,user.id]);
+      return send(res,200,{user:{...changed.rows[0],id:user.id}});
+    }
     if (path === "avatar" && req.method === "POST") {
       const avatar = String(req.body?.avatar || "");
       if (avatar && (!/^data:image\/(png|jpeg|webp|gif);base64,/.test(avatar) || avatar.length > 350000)) return send(res,400,{error:"Загрузи PNG, JPG, WEBP или GIF размером до 250 КБ"});
