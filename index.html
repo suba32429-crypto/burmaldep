@@ -455,6 +455,8 @@ function openProfile(){
  $('profileUsername').value=currentPlayer.username||'';
  $('profileHint').textContent='';
  $('profileAvatarPreview').src=currentPlayer.avatar_url||'';
+ $('profileStats').innerHTML='Время в игре: <b>'+formatPlaytime(currentPlayer.total_play_seconds||0)+'</b><br>Статус: онлайн';
+ $('profileOldPassword').value='';$('profileNewPassword').value='';
  $('profileModal').classList.add('show');
 }
 $('avatarOpen').addEventListener('click',openProfile);
