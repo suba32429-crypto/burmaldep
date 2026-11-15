@@ -112,10 +112,26 @@
 .profileAvatarPreview{width:76px;height:76px;border-radius:50%;object-fit:cover;display:block;margin:8px auto 12px;border:2px solid #8452ae;background:#30203f}.profileModalActions{display:flex;gap:8px;margin-top:10px}.profileModalActions button{flex:1;padding:11px;border:0;border-radius:8px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer}
 @media(max-width:1150px){.feedPanel{grid-column:1/-1}.liveFeed{max-height:230px}}
 @media(max-width:760px){.accountTools{flex-wrap:wrap;justify-content:flex-end}.accountName{max-width:80px}.feedPanel{margin-bottom:10px}}
+
+/* Restored layout: online list on the left, shared drop feed on the right */
+.onlinePanel{background:linear-gradient(145deg,#171326,#100d1a);border:1px solid #392957;border-radius:11px;padding:10px;min-width:0}
+.onlineHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;font-weight:950;font-size:12px;color:#eee4ff}
+.onlinePlayers{display:flex;flex-direction:column;gap:6px;max-height:230px;overflow:auto}
+.onlinePlayer{display:flex;align-items:center;gap:8px;padding:6px 7px;border:1px solid #302442;background:#171323;border-radius:8px;min-width:0;animation:feedDrop .45s ease both}
+.onlineAvatar{width:27px;height:27px;flex:none;border-radius:50%;object-fit:cover;background:#39234e;border:1px solid #8452ae}
+.onlineAvatarFallback{width:27px;height:27px;flex:none;display:grid;place-items:center;border-radius:50%;background:#39234e}
+.onlinePlayerName{font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.onlineDot{width:7px;height:7px;border-radius:50%;background:#55f59a;box-shadow:0 0 8px #55f59a;flex:none;margin-left:auto}
+.onlineEmpty{padding:12px 5px;text-align:center;color:#9588aa;font-size:10px}
+.feedLiveLabel{font-size:9px;letter-spacing:1px;color:#b9a1d5;border:1px solid #49345f;border-radius:20px;padding:4px 7px;white-space:nowrap}
+.feedEvent{grid-template-columns:30px 48px minmax(0,1fr)}
+.feedCopy em{font-style:normal;color:var(--gold);font-size:10px;font-weight:900}
+@media(max-width:1150px){.onlinePlayers{max-height:180px}}
 </style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo">Б</span> Бурмалдеп</div><div class="wincontrols"><span>—</span><span>□</span><span>×</span></div></div>
 <div class="app">
 <aside class="left"><div class="profile"><img src="./mellstroy-andrey-burim_82.jpg" alt="Портрет для оформления"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
+<div class="onlinePanel"><div class="onlineHead"><span>🟢 Сейчас в игре</span><span class="onlinePill">Онлайн: <b id="onlineCount">0</b></span></div><div class="onlinePlayers" id="onlinePlayers"><div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div></div></div>
 <div class="balance"><div class="balanceLabel">Бурмалдкойны · БК</div><div class="balanceRow"><span class="coin">🟡</span><div class="balanceValue" id="balance">820&nbsp;328</div></div><div class="displayNote">Виртуальный баланс · без денежных операций</div></div></aside>
 <main class="center">
 <header class="topnav"><nav class="tabs"><button class="tab active" data-page="cases">1 · Кейсы</button><button class="tab" data-page="inventory">2 · Инвентарь</button><button class="tab" data-page="upgrade">3 · Апгрейдер</button><button class="tab" data-page="author">Автор: Субхан Ганбаров</button></nav><div class="accountTools"><button class="accountBtn" id="authOpen">Войти</button><span class="accountName" id="accountName"></span><button class="avatarBtn" id="avatarOpen" title="Установить аватар">👤</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><div class="topBalance">🟡 <span id="topBalance">820&nbsp;328</span> БК</div></header>
@@ -156,7 +172,7 @@
 </div></section><section class="page" id="page-author"><div class="inventoryPanel"><div class="upcoming"><div style="font-size:12px;color:#b77cff;font-weight:900;letter-spacing:2px;margin-bottom:10px">BURMALDEP</div><h2>Автор проекта</h2><p style="font-size:24px;color:#f5f1ff;font-weight:900;margin-top:12px">Субхан Ганбаров</p><p>Создатель проекта БУРМАЛДЕП.</p></div></div></section>
 </main>
 <aside class="right">
-<div class="feedPanel"><div class="feedHead"><span>🟢 Сейчас в игре</span><span class="onlinePill">● Онлайн: <b id="onlineCount">—</b></span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Войди в аккаунт, чтобы увидеть игроков онлайн.</div></div></div>
+<div class="feedPanel"><div class="feedHead"><span>🎁 Кто что выбил</span><span class="feedLiveLabel">ЖИВАЯ ЛЕНТА</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Открытия кейсов появятся здесь.</div></div></div>
 <div class="sideTitle"><span>▣</span> Последние предметы <small id="invCount" style="margin-left:auto;color:#a79dbb;font-size:11px">8 шт.</small></div><div class="inventoryPeek" id="inventoryPeek"><div class="inventoryItem" style="--rarity:#45baff"><div class="invImg"><img src="./mellstroy-andrey-burim_82.jpg" alt="Элитный образ в кепке №0352" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"></div><div class="invInfo"><b>Элитный образ в кепке №0352</b><small>Редкий</small><em>4&nbsp;747 БК</em></div></div><div class="inventoryItem" style="--rarity:#ff547c"><div class="invImg"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"></div><div class="invInfo"><b>Босс Меллстрой</b><small>Секретный</small><em>10&nbsp;000 БК</em></div></div><div class="inventoryItem" style="--rarity:#d65dff"><div class="invImg"><img src="./burim.jpg" alt="Неоновый коллекционная карта с улыбкой №0664" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"></div><div class="invInfo"><b>Неоновый коллекционная карта с улыбкой №0664</b><small>Эпический</small><em>711 БК</em></div></div><div class="inventoryItem" style="--rarity:#45baff"><div class="invImg"><img src="./720_65ce2e2c82682c71d4024cb5.jpg" alt="Секретный значок в зелёном жилете №0656" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"></div><div class="invInfo"><b>Секретный значок в зелёном жилете №0656</b><small>Редкий</small><em>4&nbsp;835 БК</em></div></div><div class="inventoryItem" style="--rarity:#45baff"><div class="invImg"><img src="./burim.jpg" alt="Ультра эмблема в чёрной футболке №0637" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"></div><div class="invInfo"><b>Ультра эмблема в чёрной футболке №0637</b><small>Редкий</small><em>2&nbsp;992 БК</em></div></div><div class="inventoryItem" style="--rarity:#aaa3b8"><div class="invImg"><img src="./burim.jpg" alt="Стримовый фотокарточка из архива №0619" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"></div><div class="invInfo"><b>Стримовый фотокарточка из архива №0619</b><small>Обычный</small><em>1&nbsp;246 БК</em></div></div></div>
 <div class="featured"><div class="featureTitle">♛ Особый предмет</div><div class="featureBody"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой"><div><b>Босс Меллстрой</b><small>Секретный · шанс 15%</small><strong>Продажа: 10 000 БК</strong></div></div></div>
 <div class="sideAction"><button id="goInventory">Открыть инвентарь</button></div></aside>
@@ -311,7 +327,7 @@ function openCase(){if(revealing)return;const cost=cases[state.caseId].price*qty
  for(let n=0;n<qty;n++){let lane=document.createElement('div');lane.className='lane';lane.innerHTML='<div class="laneLabel">ПОЛОСА '+(n+1)+' / '+qty+'</div><div class="laneWindow"><div class="laneTrack"></div></div>';let track=lane.querySelector('.laneTrack');let before=Array.from({length:18},()=>{let pool=items.filter(x=>x.caseId===state.caseId);return pool[Math.floor(Math.random()*pool.length)]});let after=Array.from({length:4},()=>{let pool=items.filter(x=>x.caseId===state.caseId);return pool[Math.floor(Math.random()*pool.length)]});track.innerHTML=before.map(x=>reelCard(x)).join('')+reelCard(winners[n],true)+after.map(x=>reelCard(x)).join('');lanes.appendChild(lane);laneNodes.push({lane,track,targetIndex:18})}
  $('openCase').textContent='КЕЙС ОТКРЫВАЕТСЯ…';$('openCase').disabled=true;
  requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const lane of laneNodes){const card=lane.track.querySelector('.reelCard');const width=card.getBoundingClientRect().width;const gap=parseFloat(getComputedStyle(lane.track).gap)||8;const windowWidth=lane.track.parentElement.clientWidth;const offset=lane.targetIndex*(width+gap)+width/2-windowWidth/2;lane.track.style.transition='transform 1.85s cubic-bezier(.11,.76,.1,1)';lane.track.style.transform='translateX(-'+Math.max(0,offset)+'px)'}}));
- setTimeout(()=>{winners.forEach(x=>state.inventory.unshift(x.id));state.openingCount+=qty;save();renderInventoryPeek();$('caseProgress').textContent='Открыто предметов: '+state.openingCount+' · выпало: '+winners.length;laneNodes.forEach(l=>l.lane.classList.add('winner'));showResults(winners,cost);revealing=false;updateOpenButton()},2050)
+ setTimeout(()=>{winners.forEach(x=>state.inventory.unshift(x.id));state.openingCount+=qty;save();renderInventoryPeek();$('caseProgress').textContent='Открыто предметов: '+state.openingCount+' · выпало: '+winners.length;laneNodes.forEach(l=>l.lane.classList.add('winner'));showResults(winners,cost);publishDropEvents(winners,cases[state.caseId].name);revealing=false;updateOpenButton()},2050)
 }
 function showResults(winners,cost){$('resultTitle').textContent='Кейс открыт!';$('resultText').textContent='Списано '+money(cost)+' БК. Новые предметы уже в инвентаре.';$('resultItems').style.gridTemplateColumns='repeat(auto-fit,minmax(115px,1fr))';$('resultItems').innerHTML=winners.map(x=>'<div class="invCard" style="--rarity:'+x.color+'"><div class="bigImg" style="height:115px">'+itemImg(x)+'</div><div class="details"><b>'+esc(x.name)+'</b><small>'+x.rarity+'</small><strong>'+money(x.value)+' БК</strong></div></div>').join('');$('resultModal').classList.add('show')}
 $('resultClose').addEventListener('click',()=>$('resultModal').classList.remove('show'));$('resultModal').addEventListener('click',e=>{if(e.target.id==='resultModal')e.currentTarget.classList.remove('show')});
@@ -363,20 +379,32 @@ async function loadCurrentPlayer(){
  try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await refreshSharedData();await pingPresence();}
  catch(e){localStorage.removeItem(AUTH_KEY);currentPlayer=null;updateAccountUI();}
 }
+function renderOnlinePlayers(players){
+ const root=$('onlinePlayers');if(!root)return;
+ if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
+ root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\\'none\\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
+}
 function renderSharedFeed(events){
  const root=$('liveFeed');if(!root)return;
- if(!events.length){root.innerHTML='<div class="feedEmpty">Пока нет событий. Получи предмет — он появится здесь.</div>';return}
+ if(!events.length){root.innerHTML='<div class="feedEmpty">Пока никто не открывал кейсы. Будь первым!</div>';return}
  const incoming=events.filter(e=>!feedSeen.has(String(e.id)));
  events.forEach(e=>feedSeen.add(String(e.id)));
- root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><img class="feedItemImg" src="'+esc(e.item_image||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedCopy"><b>'+esc(e.username)+' получил(а)</b><small>'+esc(e.item_name)+(e.case_title?' · '+esc(e.case_title):'')+'</small></div></article>').join('');
+ root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><img class="feedItemImg" src="'+esc(e.item_image||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><div class="feedCopy"><b>'+esc(e.username)+' выбил(а)</b><small>'+esc(e.item_name)+(e.case_title?' · '+esc(e.case_title):'')+'</small><em>'+Number(e.item_value||0).toLocaleString('ru-RU')+' БК · '+esc(e.rarity||'Предмет')+'</em></div></article>').join('');
  if(incoming.length)root.scrollTop=0;
+}
+async function publishDropEvents(winners,caseTitle){
+ if(!currentPlayer||!winners?.length)return;
+ const drops=winners.map(item=>({item_name:item.name,item_image:item.megaBoss?megaBossPhoto:photos[item.photo],case_title:caseTitle,item_value:item.value,rarity:item.rarity}));
+ try{await apiRequest('activity','POST',{items:drops});await refreshSharedData();}
+ catch(e){console.warn('Не удалось отправить событие в ленту:',e.message);}
 }
 async function refreshSharedData(){
  if(!currentPlayer)return;
  try{
   const data=await apiRequest('feed');
-  $('onlineCount').textContent=data.online;
+  $('onlineCount').textContent=String(data.online??0);
   renderOnlinePlayers(data.players||[]);
+  renderSharedFeed(data.events||[]);
  }catch(e){if(e.message.includes('Войди')){currentPlayer=null;localStorage.removeItem(AUTH_KEY);updateAccountUI();}}
 }
 async function pingPresence(){
@@ -385,7 +413,7 @@ async function pingPresence(){
  catch(e){}
 }
 $('authOpen').addEventListener('click',()=>{
- if(currentPlayer){localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='—';$('liveFeed').innerHTML='<div class="feedEmpty">Войди в аккаунт, чтобы увидеть игроков онлайн.</div>';notify('Ты вышел из аккаунта');}
+ if(currentPlayer){localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть общую ленту.</div>';notify('Ты вышел из аккаунта');}
  else openAuth();
 });
 function openProfile(){
