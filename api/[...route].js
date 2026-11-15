@@ -152,7 +152,7 @@ export default async function handler(req, res) {
     }
 
     if (path === "inventory" && req.method === "POST") {
-      const items = Array.isArray(req.body?.items) ? req.body.items.slice(0,6) : [];
+      const items = Array.isArray(req.body?.items) ? req.body.items.slice(0,200) : [];
       await pool.query("DELETE FROM player_inventory_items WHERE player_id=$1",[user.id]);
       for (let slot=items.length-1;slot>=0;slot--) {
         const item=items[slot] || {};
