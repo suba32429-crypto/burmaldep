@@ -276,7 +276,7 @@ const eliteItems=[
  {name:'Абсолютный Мелл',value:900000},
  {name:'Бурмалда: финальная форма',value:1000000}
 ];
-for(const item of eliteItems){items.push({id:items.length,caseId:-1,...item,rarity:'Секретный',color:rarityColors[4],photo:0,placeholder:true,elite:true})}
+for(let i=0;i<eliteItems.length;i++){const item=eliteItems[i];items.push({id:items.length,caseId:-1,...item,rarity:'Секретный',color:rarityColors[4],photo:i,elite:true})}
 let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
