@@ -432,7 +432,7 @@ function renderUpgradeCatalog(){
  const filtered=items.filter(item=>(!rarity||item.rarity===rarity)&&(!query||item.name.toLocaleLowerCase('ru').includes(query)));
  const shown=filtered.slice(0,upgradeCatalogLimit);
  $('upgradeCatalogCount').textContent=filtered.length+' предметов';
- root.innerHTML=shown.map(item=>'<button type="button" class="upgradeCatalogCard '+(upgradeCatalogSelected===item.id?'selected':'')+'" data-catalog-item="'+item.id+'" style="--rarity:'+item.color+'"><span class="catalogImg">'+itemImg(item)+'</span><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+'</small></button>').join('')||'<div class="upgradePlaceholder">По этому запросу ничего не найдено.</div>';
+ root.innerHTML=shown.map(item=>'<button type="button" class="upgradeCatalogCard '+(upgradeCatalogSelected===item.id?'selected':'')+'" data-catalog-item="'+item.id+'" style="--rarity:'+item.color+'"><span class="catalogImg">'+makeImg(catalogArt(item),item.name)+'</span><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+'</small></button>').join('')||'<div class="upgradePlaceholder">По этому запросу ничего не найдено.</div>';
  $('upgradeCatalogMore').style.display=filtered.length>upgradeCatalogLimit?'inline-block':'none';
  if(upgradeCatalogSelected!==null&&!filtered.some(item=>item.id===upgradeCatalogSelected))upgradeCatalogSelected=null;
 }
