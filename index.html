@@ -168,7 +168,6 @@
 <div class="authActions"><button id="authLogin">Войти</button><button id="authRegister">Регистрация</button></div>
 <div class="authHint" id="authHint"></div><div class="authActions"><button class="authClose" id="authClose">Закрыть</button></div>
 </div></div>
-<input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
 
 <script>
 const fallback='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg';
@@ -352,7 +351,7 @@ async function authenticate(mode){
 }
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
- try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await refreshSharedData();}
+ try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await refreshSharedData();await pingPresence();}
  catch(e){localStorage.removeItem(AUTH_KEY);currentPlayer=null;updateAccountUI();}
 }
 function renderSharedFeed(events){
