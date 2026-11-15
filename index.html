@@ -127,12 +127,22 @@
 .feedEvent{grid-template-columns:30px 48px minmax(0,1fr)}
 .feedCopy em{font-style:normal;color:var(--gold);font-size:10px;font-weight:900}
 @media(max-width:1150px){.onlinePlayers{max-height:180px}}
+.feedInventoryItem{display:flex;flex-direction:column;gap:6px;padding:7px;background:#171323;border:1px solid #302442;border-radius:8px;animation:feedDrop .45s ease both;min-width:0}
+.feedInventoryTop{display:flex;align-items:center;gap:6px;min-width:0}
+.feedInventoryTop .feedAvatar{width:22px;height:22px}
+.feedInventoryTop b{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feedInventoryBody{display:flex;align-items:center;gap:7px;min-width:0}
+.feedInventoryImage{width:52px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #68428b;background:#21172f;flex:none}
+.feedInventoryCopy{display:flex;flex-direction:column;min-width:0;gap:2px}
+.feedInventoryCopy strong{font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+.feedInventoryCopy small{font-size:9px;color:#c18aff}
+.feedInventoryCopy em{font-style:normal;color:var(--gold);font-size:10px;font-weight:900}
 </style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo">Б</span> Бурмалдеп</div><div class="wincontrols"><span>—</span><span>□</span><span>×</span></div></div>
 <div class="app">
 <aside class="left"><div class="profile"><img src="./mellstroy-andrey-burim_82.jpg" alt="Портрет для оформления"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
 <div class="onlinePanel"><div class="onlineHead"><span>🟢 Сейчас в игре</span><span class="onlinePill">Онлайн: <b id="onlineCount">0</b></span></div><div class="onlinePlayers" id="onlinePlayers"><div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div></div></div>
-<div class="feedPanel leftFeedPanel"><div class="feedHead"><span>📡 Активность игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Реальные действия появятся здесь.</div></div></div>
+<div class="feedPanel leftFeedPanel"><div class="feedHead"><span>🎒 Витрина игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Предметы из инвентарей игроков появятся здесь.</div></div></div>
 <div class="balance"><div class="balanceLabel">Бурмалдкойны · БК</div><div class="balanceRow"><span class="coin">🟡</span><div class="balanceValue" id="balance">820&nbsp;328</div></div><div class="displayNote">Виртуальный баланс · без денежных операций</div></div></aside>
 <main class="center">
 <header class="topnav"><nav class="tabs"><button class="tab active" data-page="cases">1 · Кейсы</button><button class="tab" data-page="inventory">2 · Инвентарь</button><button class="tab" data-page="upgrade">3 · Апгрейдер</button><button class="tab" data-page="author">Автор: Субхан Ганбаров</button></nav><div class="accountTools"><button class="accountBtn" id="authOpen">Войти</button><span class="accountName" id="accountName"></span><button class="avatarBtn" id="avatarOpen" title="Установить аватар">👤</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><div class="topBalance">🟡 <span id="topBalance">820&nbsp;328</span> БК</div></header>
@@ -229,7 +239,7 @@ state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return Math.round(n).toLocaleString('ru-RU')}
-function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){toast('Браузер не смог сохранить изменения')}}
+function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state));queueInventorySync()}catch(e){toast('Браузер не смог сохранить изменения')}}
 function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),2400)}
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
@@ -384,13 +394,25 @@ function renderOnlinePlayers(players){
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
  root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
 }
-function renderSharedFeed(events){
+function renderSharedFeed(items){
  const root=$('liveFeed');if(!root)return;
- if(!events.length){root.innerHTML='<div class="feedEmpty">Пока нет новых действий игроков.</div>';return}
- const incoming=events.filter(e=>!feedSeen.has(String(e.id)));
- events.forEach(e=>feedSeen.add(String(e.id)));
- root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedCopy"><b>'+esc(e.username)+'</b><small>'+esc(e.item_name)+'</small></div></article>').join('');
- if(incoming.length)root.scrollTop=0;
+ if(!items.length){root.innerHTML='<div class="feedEmpty">Пока никто не выставил предметы в витрину.</div>';return}
+ root.innerHTML=items.map((item,i)=>'<article class="feedInventoryItem" style="animation-delay:'+Math.min(i,8)*55+'ms"><div class="feedInventoryTop"><img class="feedAvatar" src="'+esc(item.avatar_url||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><b>'+esc(item.username)+'</b></div><div class="feedInventoryBody"><img class="feedInventoryImage" src="'+esc(item.item_image||'')+'" alt="" onerror="this.style.visibility=\\'hidden\\'"><div class="feedInventoryCopy"><strong>'+esc(item.item_name)+'</strong><small>'+esc(item.rarity||'Предмет')+'</small><em>'+money(item.item_value||0)+' БК</em></div></div></article>').join('');
+ root.scrollTop=0;
+}
+let inventorySyncTimer=null;
+function queueInventorySync(){
+ if(!currentPlayer||!state.inventory.length)return;
+ clearTimeout(inventorySyncTimer);
+ inventorySyncTimer=setTimeout(()=>syncInventory(),500);
+}
+async function syncInventory(){
+ if(!currentPlayer)return;
+ const shown=state.inventory.slice(0,6).map(id=>{
+  const item=items[id];
+  return item?{item_name:item.name,item_image:item.megaBoss?megaBossPhoto:photos[item.photo],item_value:item.value,rarity:item.rarity}:null;
+ }).filter(Boolean);
+ await apiRequest('inventory','POST',{items:shown});
 }
 let upgradeVisitPublished=false;
 async function publishUpgradeVisit(){
@@ -405,7 +427,7 @@ async function refreshSharedData(){
   const data=await apiRequest('feed');
   $('onlineCount').textContent=String(data.online??0);
   renderOnlinePlayers(data.players||[]);
-  renderSharedFeed(data.events||[]);
+  renderSharedFeed(data.inventoryItems||[]);
  }catch(e){if(e.message.includes('Войди')){currentPlayer=null;localStorage.removeItem(AUTH_KEY);updateAccountUI();}}
 }
 async function pingPresence(){
