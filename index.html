@@ -355,9 +355,17 @@ function apiToken(){return localStorage.getItem(AUTH_KEY)||''}
 async function apiRequest(route,method='GET',body=null){
  const headers={'Content-Type':'application/json'};
  if(apiToken())headers.Authorization='Bearer '+apiToken();
- const response=await fetch(API_BASE+route,{method,headers,body:body?JSON.stringify(body):undefined});
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),12000);
+ let response;
+ try{
+  response=await fetch(API_BASE+route,{method,headers,body:body?JSON.stringify(body):undefined,signal:controller.signal});
+ }catch(error){
+  if(error.name==='AbortError')throw new Error('Сервер долго не отвечает. Попробуй ещё раз.');
+  throw new Error('Нет соединения с сервером. Проверь подключение и попробуй ещё раз.');
+ }finally{clearTimeout(timeout)}
  const data=await response.json().catch(()=>({error:'Не удалось прочитать ответ сервера'}));
- if(!response.ok)throw new Error(data.error||'Ошибка запроса');
+ if(!response.ok){const error=new Error(data.error||'Ошибка запроса');error.status=response.status;throw error;}
  return data;
 }
 function avatarMarkup(url){return url?'<img src="'+esc(url)+'" alt="Аватар">':'👤'}
@@ -383,7 +391,11 @@ async function authenticate(mode){
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
  try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await loadAccountInventory();await refreshSharedData();await pingPresence();}
- catch(e){localStorage.removeItem(AUTH_KEY);currentPlayer=null;updateAccountUI();}
+ catch(e){
+  if(e.status===401){localStorage.removeItem(AUTH_KEY);currentPlayer=null;}
+  updateAccountUI();
+  if(e.status!==401)notify(e.message||'Не удалось подключиться к серверу');
+ }
 }
 function renderOnlinePlayers(players){
  const root=$('onlinePlayers');if(!root)return;
@@ -460,6 +472,6 @@ $('authClose').addEventListener('click',()=>$('authModal').classList.remove('sho
 $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.currentTarget.classList.remove('show')});
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
 loadCurrentPlayer();
-setInterval(refreshSharedData,9000);
+setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else refreshSharedData();},15000);
 setInterval(pingPresence,30000);
 </script></body></html>
