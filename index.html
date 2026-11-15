@@ -282,36 +282,7 @@ function renderUpgrade(){
  confirm.disabled=false;
 }
 function performUpgrade(){
- if(upgradeSpinning)return;
- const source=getUpgradeSource();
- if(!source){notify('Сначала выбери предмет из инвентаря');return}
- const target=items[Number(upgradeTargetId)];
- if(!target||target.value<=source.value){notify('Подходящий предмет-цель не найден');return}
- if(state.inventory[upgradeSourceIndex]!==source.id){notify('Инвентарь изменился. Выбери предмет заново.');upgradeSourceIndex=null;renderUpgrade();return}
- const chance=Math.min(0.92,source.value/target.value*1.5);
- const win=Math.random()<chance;
- const landingAngle=win?(Math.random()*0.8+0.1)*chance*360:chance*360+(Math.random()*0.8+0.1)*(1-chance)*360;
- const base=Math.floor(upgradeSpinAngle/360)*360;
- let finishAngle=base+360*5+landingAngle;
- if(finishAngle<=upgradeSpinAngle)finishAngle+=360*5;
- upgradeSpinning=true;
- const button=$('upgradeDo'),pointer=$('upgradePointerOrbit');
- button.disabled=true;button.textContent='СТРЕЛКА КРУТИТСЯ…';
- pointer.classList.add('spinning');
- requestAnimationFrame(()=>requestAnimationFrame(()=>{pointer.style.transform='rotate('+finishAngle+'deg)'}));
- setTimeout(()=>{
-  upgradeSpinAngle=finishAngle;
-  upgradeSpinning=false;
-  pointer.classList.remove('spinning');
-  state.inventory.splice(upgradeSourceIndex,1);
-  if(win)state.inventory.unshift(target.id);
-  save();renderInventoryPeek();
-  button.textContent='Запустить апгрейд';
-  const lostName=source.name;
-  upgradeSourceIndex=null;upgradeTargetId=null;
-  renderUpgrade();
-  notify(win?'Выиграл! '+target.name+' добавлен.':'Не повезло: '+lostName+' сгорел.');
- },3450);
+ notify('Случайный апгрейдер временно отключён.');
 }
 document.querySelectorAll('[data-up-percent]').forEach(button=>button.addEventListener('click',()=>{if(upgradeSpinning)return;upgradePercent=Number(button.dataset.upPercent);upgradeTargetId=null;renderUpgrade()}));
 $('upgradeDo').addEventListener('click',performUpgrade);
@@ -320,13 +291,8 @@ function switchPage(page){document.querySelectorAll('.tab[data-page]').forEach(b
 document.querySelectorAll('.tab[data-page]').forEach(b=>b.addEventListener('click',()=>{if(!b.disabled)switchPage(b.dataset.page)}));
 $('goInventory').addEventListener('click',()=>switchPage('inventory'));
 function drawDrop(caseId){let pool=items.filter(x=>x.caseId===caseId);if(Math.random()<0.15){let bosses=pool.filter(x=>x.boss);return bosses[Math.floor(Math.random()*bosses.length)]}let normal=pool.filter(x=>!x.boss);let a=normal[Math.floor(Math.random()*normal.length)],b=normal[Math.floor(Math.random()*normal.length)];return a.value>=b.value?a:b}
-function openCase(){if(revealing)return;const cost=cases[state.caseId].price*qty;if(state.balance<cost){notify('Недостаточно БК! Нужно '+money(cost)+' БК, у тебя '+money(state.balance)+' БК.');return}
- state.balance-=cost;save();updateBalance();revealing=true;let winners=Array.from({length:qty},()=>drawDrop(state.caseId));let lanes=$('reelLanes');lanes.classList.toggle('multi',qty>=5);lanes.innerHTML='';
- const laneNodes=[];
- for(let n=0;n<qty;n++){let lane=document.createElement('div');lane.className='lane';lane.innerHTML='<div class="laneLabel">ПОЛОСА '+(n+1)+' / '+qty+'</div><div class="laneWindow"><div class="laneTrack"></div></div>';let track=lane.querySelector('.laneTrack');let before=Array.from({length:18},()=>{let pool=items.filter(x=>x.caseId===state.caseId);return pool[Math.floor(Math.random()*pool.length)]});let after=Array.from({length:4},()=>{let pool=items.filter(x=>x.caseId===state.caseId);return pool[Math.floor(Math.random()*pool.length)]});track.innerHTML=before.map(x=>reelCard(x)).join('')+reelCard(winners[n],true)+after.map(x=>reelCard(x)).join('');lanes.appendChild(lane);laneNodes.push({lane,track,targetIndex:18})}
- $('openCase').textContent='КЕЙС ОТКРЫВАЕТСЯ…';$('openCase').disabled=true;
- requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const lane of laneNodes){const card=lane.track.querySelector('.reelCard');const width=card.getBoundingClientRect().width;const gap=parseFloat(getComputedStyle(lane.track).gap)||8;const windowWidth=lane.track.parentElement.clientWidth;const offset=lane.targetIndex*(width+gap)+width/2-windowWidth/2;lane.track.style.transition='transform 1.85s cubic-bezier(.11,.76,.1,1)';lane.track.style.transform='translateX(-'+Math.max(0,offset)+'px)'}}));
- setTimeout(()=>{winners.forEach(x=>state.inventory.unshift(x.id));state.openingCount+=qty;save();renderInventoryPeek();$('caseProgress').textContent='Открыто предметов: '+state.openingCount+' · выпало: '+winners.length;laneNodes.forEach(l=>l.lane.classList.add('winner'));showResults(winners,cost);revealing=false;updateOpenButton()},2050)
+function openCase(){
+ notify('Случайное открытие кейсов временно отключено.');
 }
 function showResults(winners,cost){$('resultTitle').textContent='Кейс открыт!';$('resultText').textContent='Списано '+money(cost)+' БК. Новые предметы уже в инвентаре.';$('resultItems').style.gridTemplateColumns='repeat(auto-fit,minmax(115px,1fr))';$('resultItems').innerHTML=winners.map(x=>'<div class="invCard" style="--rarity:'+x.color+'"><div class="bigImg" style="height:115px">'+itemImg(x)+'</div><div class="details"><b>'+esc(x.name)+'</b><small>'+x.rarity+'</small><strong>'+money(x.value)+' БК</strong></div></div>').join('');$('resultModal').classList.add('show')}
 $('resultClose').addEventListener('click',()=>$('resultModal').classList.remove('show'));$('resultModal').addEventListener('click',e=>{if(e.target.id==='resultModal')e.currentTarget.classList.remove('show')});
