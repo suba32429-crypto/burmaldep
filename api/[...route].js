@@ -37,6 +37,7 @@ async function ensureSchema() {
       updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE(player_id,slot)
     )`);
+    await pool.query("ALTER TABLE player_inventory_items ADD COLUMN IF NOT EXISTS item_id integer");
     await pool.query("CREATE INDEX IF NOT EXISTS player_inventory_items_updated_idx ON player_inventory_items(updated_at DESC)");
   })();
   return schemaReady;
@@ -128,19 +129,28 @@ export default async function handler(req, res) {
       return send(res,200,{players:rows.rows,online:count.rows[0].online,events:events.rows,inventoryItems:inventoryItems.rows});
     }
 
+    if (path === "inventory" && req.method === "GET") {
+      const result = await pool.query(
+        "SELECT item_id,item_name,item_image,item_value,rarity,slot,updated_at FROM player_inventory_items WHERE player_id=$1 ORDER BY slot ASC",
+        [user.id]
+      );
+      return send(res,200,{items:result.rows});
+    }
+
     if (path === "inventory" && req.method === "POST") {
       const items = Array.isArray(req.body?.items) ? req.body.items.slice(0,6) : [];
       await pool.query("DELETE FROM player_inventory_items WHERE player_id=$1",[user.id]);
       for (let slot=0;slot<items.length;slot++) {
         const item=items[slot] || {};
+        const itemId=Number.isInteger(Number(item.item_id)) ? Number(item.item_id) : null;
         const itemName=String(item.item_name || "").trim().slice(0,120);
         const itemImage=String(item.item_image || "").trim().slice(0,2048);
         const itemValue=Math.max(0,Math.min(100000000,Math.trunc(Number(item.item_value)||0)));
         const rarity=String(item.rarity || "").trim().slice(0,32);
         if (!itemName || (itemImage && !/^https:\/\//i.test(itemImage))) continue;
         await pool.query(
-          "INSERT INTO player_inventory_items (player_id,slot,item_name,item_image,item_value,rarity) VALUES ($1,$2,$3,$4,$5,$6)",
-          [user.id,slot,itemName,itemImage || null,itemValue,rarity || null]
+          "INSERT INTO player_inventory_items (player_id,slot,item_id,item_name,item_image,item_value,rarity) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+          [user.id,slot,itemId,itemName,itemImage || null,itemValue,rarity || null]
         );
       }
       return send(res,200,{ok:true,shown:items.length});
