@@ -97,26 +97,18 @@ export default async function handler(req, res) {
       return send(res,200,{online:count.rows[0].online});
     }
     if (path === "feed" && req.method === "GET") {
-      const rows = await pool.query("SELECT id,username,avatar_url,item_name,item_image,case_title,created_at FROM activity_events ORDER BY id DESC LIMIT 25");
+      const rows = await pool.query(`SELECT DISTINCT ON (p.id) p.id,p.username,p.avatar_url
+        FROM player_sessions s JOIN players p ON p.id=s.player_id
+        WHERE s.expires_at>now() AND s.last_seen_at>now()-interval '90 seconds'
+        ORDER BY p.id,s.last_seen_at DESC LIMIT 30`);
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
-      return send(res,200,{events:rows.rows,online:count.rows[0].online});
+      return send(res,200,{players:rows.rows,online:count.rows[0].online});
     }
     if (path === "avatar" && req.method === "POST") {
       const avatar = String(req.body?.avatar || "");
       if (avatar && (!/^data:image\/(png|jpeg|webp|gif);base64,/.test(avatar) || avatar.length > 350000)) return send(res,400,{error:"Загрузи PNG, JPG, WEBP или GIF размером до 250 КБ"});
       await pool.query("UPDATE players SET avatar_url=$1 WHERE id=$2",[avatar || null,user.id]);
       return send(res,200,{avatar_url:avatar || null});
-    }
-    if (path === "activity" && req.method === "POST") {
-      const itemName = String(req.body?.item_name || "").slice(0,100);
-      const itemImage = String(req.body?.item_image || "").slice(0,700);
-      const caseTitle = String(req.body?.case_title || "").slice(0,80);
-      if (!itemName) return send(res,400,{error:"Не указано название предмета"});
-      await pool.query(
-        "INSERT INTO activity_events (player_id,username,avatar_url,item_name,item_image,case_title) VALUES ($1,$2,$3,$4,$5,$6)",
-        [user.id,user.username,user.avatar_url,itemName,itemImage,caseTitle]
-      );
-      return send(res,201,{ok:true});
     }
     return send(res,404,{error:"Маршрут не найден"});
   } catch (error) {
