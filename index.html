@@ -127,22 +127,12 @@
 .feedEvent{grid-template-columns:30px 48px minmax(0,1fr)}
 .feedCopy em{font-style:normal;color:var(--gold);font-size:10px;font-weight:900}
 @media(max-width:1150px){.onlinePlayers{max-height:180px}}
-.feedInventoryItem{display:flex;flex-direction:column;gap:6px;padding:7px;background:#171323;border:1px solid #302442;border-radius:8px;animation:feedDrop .45s ease both;min-width:0}
-.feedInventoryTop{display:flex;align-items:center;gap:6px;min-width:0}
-.feedInventoryTop .feedAvatar{width:22px;height:22px}
-.feedInventoryTop b{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.feedInventoryBody{display:flex;align-items:center;gap:7px;min-width:0}
-.feedInventoryImage{width:52px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #68428b;background:#21172f;flex:none}
-.feedInventoryCopy{display:flex;flex-direction:column;min-width:0;gap:2px}
-.feedInventoryCopy strong{font-size:10px;line-height:1.2;overflow-wrap:anywhere}
-.feedInventoryCopy small{font-size:9px;color:#c18aff}
-.feedInventoryCopy em{font-style:normal;color:var(--gold);font-size:10px;font-weight:900}
 </style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo">Б</span> Бурмалдеп</div><div class="wincontrols"><span>—</span><span>□</span><span>×</span></div></div>
 <div class="app">
 <aside class="left"><div class="profile"><img src="./mellstroy-andrey-burim_82.jpg" alt="Портрет для оформления"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
 <div class="onlinePanel"><div class="onlineHead"><span>🟢 Сейчас в игре</span><span class="onlinePill">Онлайн: <b id="onlineCount">0</b></span></div><div class="onlinePlayers" id="onlinePlayers"><div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div></div></div>
-<div class="feedPanel leftFeedPanel"><div class="feedHead"><span>🎒 Витрина игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Предметы из инвентарей игроков появятся здесь.</div></div></div>
+<div class="feedPanel leftFeedPanel"><div class="feedHead"><span>📡 Активность игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Реальные действия появятся здесь.</div></div></div>
 <div class="balance"><div class="balanceLabel">Бурмалдкойны · БК</div><div class="balanceRow"><span class="coin">🟡</span><div class="balanceValue" id="balance">820&nbsp;328</div></div><div class="displayNote">Виртуальный баланс · без денежных операций</div></div></aside>
 <main class="center">
 <header class="topnav"><nav class="tabs"><button class="tab active" data-page="cases">1 · Кейсы</button><button class="tab" data-page="inventory">2 · Инвентарь</button><button class="tab" data-page="upgrade">3 · Апгрейдер</button><button class="tab" data-page="author">Автор: Субхан Ганбаров</button></nav><div class="accountTools"><button class="accountBtn" id="authOpen">Войти</button><span class="accountName" id="accountName"></span><button class="avatarBtn" id="avatarOpen" title="Установить аватар">👤</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><div class="topBalance">🟡 <span id="topBalance">820&nbsp;328</span> БК</div></header>
@@ -239,7 +229,7 @@ state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return Math.round(n).toLocaleString('ru-RU')}
-function save(syncItems=false){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state));if(syncItems)queueInventorySync(true)}catch(e){toast('Браузер не смог сохранить изменения')}}
+function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){toast('Браузер не смог сохранить изменения')}}
 function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),2400)}
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
@@ -337,7 +327,7 @@ function openCase(){if(revealing)return;const cost=cases[state.caseId].price*qty
  for(let n=0;n<qty;n++){let lane=document.createElement('div');lane.className='lane';lane.innerHTML='<div class="laneLabel">ПОЛОСА '+(n+1)+' / '+qty+'</div><div class="laneWindow"><div class="laneTrack"></div></div>';let track=lane.querySelector('.laneTrack');let before=Array.from({length:18},()=>{let pool=items.filter(x=>x.caseId===state.caseId);return pool[Math.floor(Math.random()*pool.length)]});let after=Array.from({length:4},()=>{let pool=items.filter(x=>x.caseId===state.caseId);return pool[Math.floor(Math.random()*pool.length)]});track.innerHTML=before.map(x=>reelCard(x)).join('')+reelCard(winners[n],true)+after.map(x=>reelCard(x)).join('');lanes.appendChild(lane);laneNodes.push({lane,track,targetIndex:18})}
  $('openCase').textContent='КЕЙС ОТКРЫВАЕТСЯ…';$('openCase').disabled=true;
  requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const lane of laneNodes){const card=lane.track.querySelector('.reelCard');const width=card.getBoundingClientRect().width;const gap=parseFloat(getComputedStyle(lane.track).gap)||8;const windowWidth=lane.track.parentElement.clientWidth;const offset=lane.targetIndex*(width+gap)+width/2-windowWidth/2;lane.track.style.transition='transform 1.85s cubic-bezier(.11,.76,.1,1)';lane.track.style.transform='translateX(-'+Math.max(0,offset)+'px)'}}));
- setTimeout(()=>{winners.forEach(x=>state.inventory.unshift(x.id));state.openingCount+=qty;save(true);renderInventoryPeek();$('caseProgress').textContent='Открыто предметов: '+state.openingCount+' · выпало: '+winners.length;laneNodes.forEach(l=>l.lane.classList.add('winner'));showResults(winners,cost);revealing=false;updateOpenButton()},2050)
+ setTimeout(()=>{winners.forEach(x=>state.inventory.unshift(x.id));state.openingCount+=qty;save();renderInventoryPeek();$('caseProgress').textContent='Открыто предметов: '+state.openingCount+' · выпало: '+winners.length;laneNodes.forEach(l=>l.lane.classList.add('winner'));showResults(winners,cost);revealing=false;updateOpenButton()},2050)
 }
 function showResults(winners,cost){$('resultTitle').textContent='Кейс открыт!';$('resultText').textContent='Списано '+money(cost)+' БК. Новые предметы уже в инвентаре.';$('resultItems').style.gridTemplateColumns='repeat(auto-fit,minmax(115px,1fr))';$('resultItems').innerHTML=winners.map(x=>'<div class="invCard" style="--rarity:'+x.color+'"><div class="bigImg" style="height:115px">'+itemImg(x)+'</div><div class="details"><b>'+esc(x.name)+'</b><small>'+x.rarity+'</small><strong>'+money(x.value)+' БК</strong></div></div>').join('');$('resultModal').classList.add('show')}
 $('resultClose').addEventListener('click',()=>$('resultModal').classList.remove('show'));$('resultModal').addEventListener('click',e=>{if(e.target.id==='resultModal')e.currentTarget.classList.remove('show')});
@@ -345,8 +335,8 @@ $('openCase').addEventListener('click',openCase);
 document.querySelectorAll('[data-qty]').forEach(b=>b.addEventListener('click',()=>{if(revealing)return;qty=Number(b.dataset.qty);document.querySelectorAll('[data-qty]').forEach(x=>x.classList.toggle('active',x===b));updateOpenButton()}));
 function renderInventoryPeek(){$('invCount').textContent=state.inventory.length+' шт.';let rows=state.inventory.slice(0,6).map(id=>{let x=items[id];return '<div class="inventoryItem" style="--rarity:'+x.color+'"><div class="invImg">'+itemImg(x)+'</div><div class="invInfo"><b>'+esc(x.name)+'</b><small>'+x.rarity+'</small><em>'+money(x.value)+' БК</em></div></div>'}).join('');$('inventoryPeek').innerHTML=rows||'<div class="inventoryEmpty">Пока пусто. Открой кейс, чтобы получить предмет.</div>'}
 function renderInventoryPage(){let grid=$('invGrid'),sort=$('invSort').value;let data=state.inventory.map((id,index)=>({item:items[id],index}));if(sort==='high')data.sort((a,b)=>b.item.value-a.item.value);else if(sort==='low')data.sort((a,b)=>a.item.value-b.item.value);let total=data.reduce((s,x)=>s+x.item.value,0);$('invSummary').textContent=state.inventory.length+' предметов · общая оценка '+money(total)+' БК';grid.innerHTML=data.length?data.map(x=>itemCard(x.item,x.index)).join(''):'<div class="emptyInventory">Инвентарь пока пуст.<br>Открой кейс, и выпавшие предметы появятся здесь.</div>';renderInventoryPeek()}
-function sellOne(index){let id=state.inventory[index];if(id===undefined)return;let item=items[id];state.balance+=item.value;state.inventory.splice(index,1);save(true);updateBalance();renderInventoryPage();notify('Продано за '+money(item.value)+' БК')}
-$('sellAll').addEventListener('click',()=>{if(!state.inventory.length){notify('Инвентарь пуст');return}let total=state.inventory.reduce((s,id)=>s+items[id].value,0);state.inventory=[];state.balance+=total;save(true);updateBalance();renderInventoryPage();notify('Все предметы проданы за '+money(total)+' БК')});
+function sellOne(index){let id=state.inventory[index];if(id===undefined)return;let item=items[id];state.balance+=item.value;state.inventory.splice(index,1);save();updateBalance();renderInventoryPage();notify('Продано за '+money(item.value)+' БК')}
+$('sellAll').addEventListener('click',()=>{if(!state.inventory.length){notify('Инвентарь пуст');return}let total=state.inventory.reduce((s,id)=>s+items[id].value,0);state.inventory=[];state.balance+=total;save();updateBalance();renderInventoryPage();notify('Все предметы проданы за '+money(total)+' БК')});
 $('invSort').addEventListener('change',renderInventoryPage);
 $('allCases').addEventListener('click',()=>{let all=cases.map(c=>'<button class="caseTile" data-allcase="'+c.id+'"><div class="tileImg">'+makeImg(photos[c.photo],c.name)+'</div><b>'+esc(c.name)+'</b><small>'+money(c.price)+' БК</small></button>').join('');$('resultTitle').textContent='Все 50 кейсов';$('resultText').textContent='Выбери кейс, который хочешь открыть.';$('resultItems').style.gridTemplateColumns='repeat(auto-fit,minmax(120px,1fr))';$('resultItems').innerHTML=all;$('resultItems').querySelectorAll('[data-allcase]').forEach(b=>b.addEventListener('click',()=>{selectCase(Number(b.dataset.allcase));$('resultModal').classList.remove('show')}));$('resultModal').classList.add('show')});
 $('selectedCaseName').textContent='Кейс: '+cases[state.caseId].name;$('selectedCaseImage').src=photos[cases[state.caseId].photo];$('caseProgress').textContent='В кейсе 100 предметов · шанс босса 15%';renderCaseStrip();renderLanes(true);renderInventoryPeek();updateBalance();
@@ -381,13 +371,12 @@ async function authenticate(mode){
   localStorage.setItem(AUTH_KEY,data.token);currentPlayer=data.user;updateAccountUI();
   $('authModal').classList.remove('show');$('authPassword').value='';
   notify(mode==='register'?'Аккаунт создан!':'Ты вошёл в аккаунт');
-  if(state.inventory.length)await syncInventory();
   await refreshSharedData();
  }catch(e){$('authHint').textContent=e.message;}
 }
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
- try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();if(state.inventory.length)await syncInventory();await refreshSharedData();await pingPresence();}
+ try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await refreshSharedData();await pingPresence();}
  catch(e){localStorage.removeItem(AUTH_KEY);currentPlayer=null;updateAccountUI();}
 }
 function renderOnlinePlayers(players){
@@ -395,25 +384,13 @@ function renderOnlinePlayers(players){
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
  root.innerHTML=players.map((p,i)=>'<div class="onlinePlayer" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></div>').join('');
 }
-function renderSharedFeed(items){
+function renderSharedFeed(events){
  const root=$('liveFeed');if(!root)return;
- if(!items.length){root.innerHTML='<div class="feedEmpty">Пока никто не выставил предметы в витрину.</div>';return}
- root.innerHTML=items.map((item,i)=>'<article class="feedInventoryItem" style="animation-delay:'+Math.min(i,8)*55+'ms"><div class="feedInventoryTop"><img class="feedAvatar" src="'+esc(item.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><b>'+esc(item.username)+'</b></div><div class="feedInventoryBody"><img class="feedInventoryImage" src="'+esc(item.item_image||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedInventoryCopy"><strong>'+esc(item.item_name)+'</strong><small>'+esc(item.rarity||'Предмет')+'</small><em>'+money(item.item_value||0)+' БК</em></div></div></article>').join('');
- root.scrollTop=0;
-}
-let inventorySyncTimer=null;
-function queueInventorySync(force=false){
- if(!currentPlayer||(!force&&!state.inventory.length))return;
- clearTimeout(inventorySyncTimer);
- inventorySyncTimer=setTimeout(()=>syncInventory(),500);
-}
-async function syncInventory(){
- if(!currentPlayer)return;
- const shown=state.inventory.slice(0,6).map(id=>{
-  const item=items[id];
-  return item?{item_name:item.name,item_image:item.megaBoss?megaBossPhoto:photos[item.photo],item_value:item.value,rarity:item.rarity}:null;
- }).filter(Boolean);
- await apiRequest('inventory','POST',{items:shown});
+ if(!events.length){root.innerHTML='<div class="feedEmpty">Пока нет новых действий игроков.</div>';return}
+ const incoming=events.filter(e=>!feedSeen.has(String(e.id)));
+ events.forEach(e=>feedSeen.add(String(e.id)));
+ root.innerHTML=events.map((e,i)=>'<article class="feedEvent" style="animation-delay:'+Math.min(i,8)*45+'ms"><img class="feedAvatar" src="'+esc(e.avatar_url||'')+'" alt="" onerror="this.style.visibility=\'hidden\'"><div class="feedCopy"><b>'+esc(e.username)+'</b><small>'+esc(e.item_name)+'</small></div></article>').join('');
+ if(incoming.length)root.scrollTop=0;
 }
 let upgradeVisitPublished=false;
 async function publishUpgradeVisit(){
@@ -428,7 +405,7 @@ async function refreshSharedData(){
   const data=await apiRequest('feed');
   $('onlineCount').textContent=String(data.online??0);
   renderOnlinePlayers(data.players||[]);
-  renderSharedFeed(data.inventoryItems||[]);
+  renderSharedFeed(data.events||[]);
  }catch(e){if(e.message.includes('Войди')){currentPlayer=null;localStorage.removeItem(AUTH_KEY);updateAccountUI();}}
 }
 async function pingPresence(){
