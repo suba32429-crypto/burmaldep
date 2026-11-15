@@ -228,7 +228,7 @@ state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return Math.round(n).toLocaleString('ru-RU')}
-function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){toast('Браузер не смог сохранить изменения')}}
+function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){notify('Браузер не смог сохранить изменения')}if(currentPlayer)scheduleInventorySync()}
 function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),2400)}
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
@@ -345,6 +345,12 @@ const API_BASE='/api/';
 const AUTH_KEY='burmaldep-session-token';
 let currentPlayer=null;
 let feedSeen=new Set();
+let inventorySyncTimer=null;
+function inventoryImageUrl(item){const url=item.megaBoss?megaBossPhoto:photos[item.photo];return typeof url==='string'&&/^https:\/\//i.test(url)?url:null}
+function inventoryPayload(){return state.inventory.slice(0,6).map(id=>{const item=items[id];return item?{item_id:item.id,item_name:item.name,item_image:inventoryImageUrl(item),item_value:item.value,rarity:item.rarity}:null}).filter(Boolean)}
+function scheduleInventorySync(){if(!currentPlayer)return;clearTimeout(inventorySyncTimer);inventorySyncTimer=setTimeout(()=>syncAccountInventory().catch(e=>console.warn('Не удалось сохранить инвентарь:',e.message)),350)}
+async function syncAccountInventory(){if(!currentPlayer)return;await apiRequest('inventory','POST',{items:inventoryPayload()});}
+async function loadAccountInventory(){const data=await apiRequest('inventory');const saved=Array.isArray(data.items)?data.items:[];if(saved.length){state.inventory=saved.map(row=>{const id=Number(row.item_id);return Number.isInteger(id)&&items[id]?id:items.find(x=>x.name===row.item_name)?.id}).filter(id=>Number.isInteger(id));localStorage.setItem('burmaldep-live-state',JSON.stringify(state));}else if(state.inventory.length){await syncAccountInventory();}renderInventoryPeek();if($('page-inventory')?.classList.contains('active'))renderInventoryPage();}
 function apiToken(){return localStorage.getItem(AUTH_KEY)||''}
 async function apiRequest(route,method='GET',body=null){
  const headers={'Content-Type':'application/json'};
@@ -370,12 +376,13 @@ async function authenticate(mode){
   localStorage.setItem(AUTH_KEY,data.token);currentPlayer=data.user;updateAccountUI();
   $('authModal').classList.remove('show');$('authPassword').value='';
   notify(mode==='register'?'Аккаунт создан!':'Ты вошёл в аккаунт');
+  if(mode==='register')await syncAccountInventory();else await loadAccountInventory();
   await refreshSharedData();
  }catch(e){$('authHint').textContent=e.message;}
 }
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
- try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await refreshSharedData();await pingPresence();}
+ try{const data=await apiRequest('me');currentPlayer=data.user;updateAccountUI();await loadAccountInventory();await refreshSharedData();await pingPresence();}
  catch(e){localStorage.removeItem(AUTH_KEY);currentPlayer=null;updateAccountUI();}
 }
 function renderOnlinePlayers(players){
