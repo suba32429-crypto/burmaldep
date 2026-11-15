@@ -221,8 +221,20 @@ for(let c=0;c<50;c++)for(let j=0;j<100;j++){
  const name=boss?(j===0?'Босс Меллстрой':'Босс Меллстрой · образ '+(j+1)):wordA[(id*7)%wordA.length]+' '+wordB[(id*3)%wordB.length]+' '+wordC[(id*11)%wordC.length]+' №'+String(id+1).padStart(4,'0');
  items.push({id,caseId:c,name,rarity:rarities[rarity],color:rarityColors[rarity],photo:boss?1:(id*5+c*3)%photos.length,value:boss?10000:100+((id*97)%4900),boss});
 }
-items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});
-let state={balance:12450,caseId:0,inventory:[],openingCount:0};
+const bonusItems=[
+ {name:'Неоновая корона',value:12500,rarity:'Эпический',color:rarityColors[2],photo:2},
+ {name:'Золотой микрофон',value:18000,rarity:'Легендарный',color:rarityColors[3],photo:3},
+ {name:'Бурма-кристалл',value:25000,rarity:'Легендарный',color:rarityColors[3],photo:4},
+ {name:'Королевский портрет',value:32000,rarity:'Легендарный',color:rarityColors[3],photo:5},
+ {name:'Алмазный куб',value:40000,rarity:'Легендарный',color:rarityColors[3],photo:6},
+ {name:'Радужный трофей',value:48000,rarity:'Секретный',color:rarityColors[4],photo:7},
+ {name:'Золотой трон',value:57000,rarity:'Секретный',color:rarityColors[4],photo:8},
+ {name:'Космический Бурма',value:68000,rarity:'Секретный',color:rarityColors[4],photo:0},
+ {name:'Корона императора',value:82000,rarity:'Секретный',color:rarityColors[4],photo:1},
+ {name:'Абсолютный Босс',value:100000,rarity:'Секретный',color:'#ffd45f',photo:0,boss:true}
+];
+for(const item of bonusItems){items.push({id:items.length,caseId:-1,...item,bonus:true})}
+items.push({id:items.length,caseId:-1,name:'Мега Бурмалда Босс',rarity:'Секретный',color:'#ffd45f',photo:0,value:100000,boss:true,megaBoss:true});let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
@@ -319,7 +331,7 @@ $('upgradeDo').addEventListener('click',performUpgrade);
 function switchPage(page){document.querySelectorAll('.tab[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));if(page==='inventory')renderInventoryPage();if(page==='cases')updateBalance();if(page==='upgrade'){renderUpgrade();publishUpgradeVisit()}}
 document.querySelectorAll('.tab[data-page]').forEach(b=>b.addEventListener('click',()=>{if(!b.disabled)switchPage(b.dataset.page)}));
 $('goInventory').addEventListener('click',()=>switchPage('inventory'));
-function drawDrop(caseId){let pool=items.filter(x=>x.caseId===caseId);if(Math.random()<0.15){let bosses=pool.filter(x=>x.boss);return bosses[Math.floor(Math.random()*bosses.length)]}let normal=pool.filter(x=>!x.boss);let a=normal[Math.floor(Math.random()*normal.length)],b=normal[Math.floor(Math.random()*normal.length)];return a.value>=b.value?a:b}
+function drawDrop(caseId){let pool=items.filter(x=>x.caseId===caseId);if(caseId===0){const extras=items.filter(x=>x.bonus);pool=pool.concat(extras)}if(Math.random()<0.15){let bosses=pool.filter(x=>x.boss);return bosses[Math.floor(Math.random()*bosses.length)]}let normal=pool.filter(x=>!x.boss);let a=normal[Math.floor(Math.random()*normal.length)],b=normal[Math.floor(Math.random()*normal.length)];return a.value>=b.value?a:b}
 function openCase(){if(revealing)return;const cost=cases[state.caseId].price*qty;if(state.balance<cost){notify('Недостаточно БК! Нужно '+money(cost)+' БК, у тебя '+money(state.balance)+' БК.');return}
  state.balance-=cost;save();updateBalance();revealing=true;let winners=Array.from({length:qty},()=>drawDrop(state.caseId));let lanes=$('reelLanes');lanes.classList.toggle('multi',qty>=5);lanes.innerHTML='';
  const laneNodes=[];
