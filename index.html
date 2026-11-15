@@ -178,10 +178,11 @@
 </div>
 <div class="modalBack" id="resultModal"><div class="modal"><h2 id="resultTitle">Выпавшие предметы</h2><p id="resultText"></p><div id="resultItems" class="invGrid"></div><button id="resultClose">Продолжить</button></div></div><div class="toast" id="toast"></div>
 <div class="authModalBack" id="profileModal"><div class="authModal">
-<h2>Мой профиль</h2><p>Измени ник или выбери новую аватарку.</p>
+<h2>Мой профиль</h2><p>Настройки аккаунта и время в игре.</p><div class="profileStats" id="profileStats">Время в игре: загружается…<br>Статус: онлайн</div>
 <img class="profileAvatarPreview" id="profileAvatarPreview" alt="Твоя аватарка">
 <button class="accountBtn" id="profileChangeAvatar" type="button" style="width:100%">Изменить аватарку</button>
 <input id="profileUsername" autocomplete="username" maxlength="20" placeholder="Новый ник (3–20 символов)">
+<div class="passwordFields"><input id="profileOldPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="Старый пароль"><input id="profileNewPassword" type="password" autocomplete="new-password" maxlength="128" placeholder="Новый пароль (от 8 символов)"><button class="accountBtn" id="profileChangePassword" type="button">Изменить пароль</button></div>
 <div class="authHint" id="profileHint"></div>
 <div class="profileModalActions"><button id="profileSave" type="button">Сохранить ник</button><button class="authClose" id="profileClose" type="button">Закрыть</button></div>
 </div></div>
@@ -441,13 +442,14 @@ async function refreshSharedData(){
 }
 async function pingPresence(){
  if(!currentPlayer)return;
- try{const data=await apiRequest('presence','POST',{});$('onlineCount').textContent=data.online;}
+ try{const data=await apiRequest('presence','POST',{});$('onlineCount').textContent=data.online;const me=await apiRequest('me');currentPlayer={...currentPlayer,...me.user};if($('profileModal').classList.contains('show'))$('profileStats').innerHTML='Время в игре: <b>'+formatPlaytime(currentPlayer.total_play_seconds||0)+'</b><br>Статус: онлайн';}
  catch(e){}
 }
 $('authOpen').addEventListener('click',()=>{
  if(currentPlayer){save();updateBalance();localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();updateAccountUI();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть предметы игроков.</div>';notify('Ты вышел из аккаунта');}
  else openAuth();
 });
+function formatPlaytime(seconds){seconds=Math.max(0,Math.floor(Number(seconds)||0));const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60);return h+' ч '+m+' мин';}
 function openProfile(){
  if(!currentPlayer){openAuth();return}
  $('profileUsername').value=currentPlayer.username||'';
@@ -459,6 +461,7 @@ $('avatarOpen').addEventListener('click',openProfile);
 $('profileChangeAvatar').addEventListener('click',()=>$('avatarFile').click());
 $('profileClose').addEventListener('click',()=>$('profileModal').classList.remove('show'));
 $('profileModal').addEventListener('click',e=>{if(e.target.id==='profileModal')e.currentTarget.classList.remove('show')});
+$('profileChangePassword').addEventListener('click',async()=>{const current_password=$('profileOldPassword').value,new_password=$('profileNewPassword').value;if(!current_password||new_password.length<8){$('profileHint').textContent='Введи старый пароль и новый пароль длиной от 8 символов.';return;} $('profileHint').textContent='Обновляем пароль…';try{await apiRequest('password','POST',{current_password,new_password});$('profileOldPassword').value='';$('profileNewPassword').value='';$('profileHint').textContent='Пароль успешно изменён.';notify('Пароль изменён');}catch(err){$('profileHint').textContent=err.message;}});
 $('profileSave').addEventListener('click',async()=>{
  const username=$('profileUsername').value.trim();
  $('profileHint').textContent='Сохраняем…';
