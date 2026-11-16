@@ -370,7 +370,7 @@ function playBurmaldepShow(){return Promise.resolve()}
 function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),2400)}
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
-function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+esc(fallbackSrc)+'\'">'}
+function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=&quot;'+esc(fallbackSrc)+'&quot;">'}
 function itemImg(item){const url=item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
 function itemCard(item,inventoryIndex){return '<article class="invCard" style="--rarity:'+item.color+'"><div class="bigImg">'+itemImg(item)+'</div><div class="details"><b>'+esc(item.name)+'</b><small>'+item.rarity+'</small><strong>'+money(item.value)+' БК</strong><button onclick="sellOne('+inventoryIndex+')">Продать за '+money(item.value)+' БК</button></div></article>'}
 function reelCard(item,selected=false){return '<div class="reelCard '+(selected?'selected':'')+'" style="--rarity:'+item.color+'">'+itemImg(item)+'<strong style="color:'+item.color+'">'+esc(item.name)+'</strong></div>'}
@@ -617,7 +617,7 @@ async function loadCurrentPlayer(){
 function renderOnlinePlayers(players){
  const root=$('onlinePlayers');if(!root)return;
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
- root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></button>').join('');
+ root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=&quot;none&quot;">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></button>').join('');
 }
 async function openPlayerProfile(playerId){
  const modal=$('playerViewModal');if(!modal)return;
@@ -633,7 +633,7 @@ async function openPlayerProfile(playerId){
   $('playerViewName').textContent=player.username||'Профиль игрока';
   $('playerViewAvatar').src=player.avatar_url||'';
   $('playerViewStats').innerHTML='Время в игре: <b>'+formatPlaytime(player.total_play_seconds||0)+'</b><br>Предметов в инвентаре: <b>'+items.length+'</b>';
-  $('playerViewInventory').innerHTML=items.length?items.map(item=>'<div class="invCard">'+(item.item_image?'<img src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'')+'<b>'+esc(item.item_name)+'</b><small>'+money(Number(item.item_value)||0)+' БК</small></div>').join(''):'<div class="feedEmpty">Инвентарь пока пуст.</div>';
+  $('playerViewInventory').innerHTML=items.length?items.map(item=>'<div class="invCard">'+(item.item_image?'<img src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'')+'<b>'+esc(item.item_name)+'</b><small>'+money(Number(item.item_value)||0)+' БК</small></div>').join(''):'<div class="feedEmpty">Инвентарь пока пуст.</div>';
  }catch(e){
   $('playerViewName').textContent='Не удалось открыть профиль';
   $('playerViewInventory').innerHTML='';
@@ -650,7 +650,7 @@ function renderPlayerItems(items){
  const root=$('liveFeed');if(!root)return;
  if(!items.length){root.innerHTML='<div class="feedEmpty">Пока нет предметов, сохранённых игроками.</div>';return}
  root.innerHTML=items.map((item,i)=>{
-  const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'';
+  const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'';
   const value=Number(item.item_value)>0?'<em>'+money(Number(item.item_value))+' БК</em>':'';
   return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+'</small>'+value+'</div></article>';
  }).join('');
