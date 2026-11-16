@@ -202,8 +202,11 @@
 .speedToggle.active{border-color:#ffd45f!important;color:#ffd45f;background:linear-gradient(145deg,#49331a,#2b1b12)!important;box-shadow:0 0 14px #ffc85755,inset 0 1px 0 #ffffff20}
 .upgradeBoxHead{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .upgradeSpeedToggle{flex:0 0 38px!important;width:38px;min-width:38px!important;height:34px;font-size:18px!important}
-.reelLanes.multi{align-content:start;overflow-x:hidden}
+.reelLanes.multi{align-content:start;overflow-x:hidden;direction:ltr}
+.reelLanes.multi:not(.mega) .lane:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - 4px);justify-self:center}
 .reelLanes.multi .lane,.reelLanes.mega .lane{contain:layout paint}
+.laneWindow,.laneTrack{direction:ltr}
+.laneTrack{flex-direction:row}
 </style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo">Б</span> Бурмалдеп</div><div class="wincontrols"><span>—</span><span>□</span><span>×</span></div></div>
 <div class="app">
@@ -540,7 +543,7 @@ function openCaseCore(){if(revealing)return;const cost=cases[state.caseId].price
  for(let n=0;n<qty;n++){let lane=document.createElement('div');lane.className='lane';lane.innerHTML='<div class="laneLabel">ПОЛОСА '+(n+1)+' / '+qty+'</div><div class="laneWindow"><div class="laneTrack"></div></div>';let track=lane.querySelector('.laneTrack');let before=Array.from({length:18},()=>reelPool[Math.floor(Math.random()*reelPool.length)]);let after=Array.from({length:4},()=>reelPool[Math.floor(Math.random()*reelPool.length)]);track.innerHTML=before.map(x=>reelCard(x)).join('')+reelCard(winners[n],true)+after.map(x=>reelCard(x)).join('');lanes.appendChild(lane);laneNodes.push({lane,track,targetIndex:18})}
  $('openCase').textContent='КЕЙС ОТКРЫВАЕТСЯ…';$('openCase').disabled=true;
  const spinDuration=fastCaseOpen?90:1850,finishDelay=fastCaseOpen?120:2050;
- if(!fastCaseOpen)requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const lane of laneNodes){const selected=lane.track.querySelector('.reelCard.selected');const width=selected.getBoundingClientRect().width;const gap=parseFloat(getComputedStyle(lane.track).gap)||8;const windowWidth=lane.track.parentElement.clientWidth;const offset=lane.targetIndex*(width+gap)+width/2-windowWidth/2;lane.track.style.transition='transform '+spinDuration+'ms cubic-bezier(.11,.76,.1,1)';lane.track.style.transform='translateX(-'+Math.max(0,offset)+'px)'}}));
+ if(!fastCaseOpen)requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const lane of laneNodes){const selected=lane.track.querySelector('.reelCard.selected');const laneWindow=lane.track.parentElement;lane.track.style.direction='ltr';lane.track.style.flexDirection='row';lane.track.style.transition='none';lane.track.style.transform='translateX(0px)';const offset=selected.offsetLeft+selected.offsetWidth/2-laneWindow.clientWidth/2;lane.track.getBoundingClientRect();lane.track.style.transition='transform '+spinDuration+'ms cubic-bezier(.11,.76,.1,1)';lane.track.style.transform='translateX(-'+Math.max(0,offset)+'px)'}}));
  setTimeout(()=>{winners.forEach(x=>state.inventory.unshift(x.id));state.openingCount+=qty;save();renderInventoryPeek();$('caseProgress').textContent='Открыто предметов: '+state.openingCount+' · выпало: '+winners.length;laneNodes.forEach(l=>l.lane.classList.add('winner'));showResults(winners,cost);revealing=false;updateOpenButton()},finishDelay)
 }
 function showResults(winners,cost){$('resultTitle').textContent='Кейс открыт!';$('resultText').textContent='Списано '+money(cost)+' БК. Новые предметы уже в инвентаре.';$('resultItems').style.gridTemplateColumns='repeat(auto-fit,minmax(115px,1fr))';$('resultItems').innerHTML=winners.map(x=>'<div class="invCard" style="--rarity:'+x.color+'"><div class="bigImg" style="height:115px">'+itemImg(x)+'</div><div class="details"><b>'+esc(x.name)+'</b><small>'+x.rarity+'</small><strong>'+money(x.value)+' БК</strong></div></div>').join('');$('resultModal').classList.add('show')}
