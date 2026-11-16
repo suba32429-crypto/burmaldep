@@ -481,23 +481,35 @@ document.querySelectorAll('.tab[data-page]').forEach(b=>b.addEventListener('clic
 $('goInventory').addEventListener('click',()=>switchPage('inventory'));
 function drawDrop(caseId){
  const casePrice=cases[caseId].price;
- // Вес награды зависит от её стоимости относительно цены выбранного кейса.
- // Для кейса за 1 000 БК: до ~1 700 — частые, около 2 000 — реже,
- // 10 000 — редкие, 50 000 — очень редкие, 100 000+ — сверхредкие.
- const pool=items.filter(x=>x.caseId===caseId||x.bonus||x.elite||x.megaBoss);
+ // Диапазоны всегда рассчитываются от цены именно выбранного кейса.
+ // Например, для кейса 1 000: обычные награды до 2 000,
+ // диапазон около 10 000 получает 10%, около 50 000 — 5%,
+ // а награды от 60x цены кейса — всего 1%.
+ const pool=items.filter(item=>item.caseId===caseId||item.caseId===-1);
  const tiers=[
-  {min:0,max:1.7,weight:80},
-  {min:1.7,max:2,weight:70},
-  {min:2,max:10,weight:10},
-  {min:10,max:50,weight:5},
-  {min:50,max:Infinity,weight:1}
+  {min:0,max:2,weight:80},
+  {min:2,max:8,weight:4},
+  {min:8,max:12,weight:10},
+  {min:12,max:60,weight:5},
+  {min:60,max:Infinity,weight:1}
  ];
- const available=tiers.map(tier=>({tier,items:pool.filter(item=>{const ratio=item.value/casePrice;return ratio>tier.min&&ratio<=tier.max})})).filter(group=>group.items.length);
+ const available=tiers.map(tier=>({
+  weight:tier.weight,
+  items:pool.filter(item=>{
+   const ratio=item.value/casePrice;
+   return ratio>tier.min&&ratio<=tier.max;
+  })
+ })).filter(group=>group.items.length);
  if(!available.length)return pool[Math.floor(Math.random()*pool.length)];
- const totalWeight=available.reduce((sum,group)=>sum+group.tier.weight,0);
+ // Если в кейсе нет предметов из какого-либо диапазона, веса оставшихся
+ // диапазонов автоматически нормализуются до 100%.
+ const totalWeight=available.reduce((sum,group)=>sum+group.weight,0);
  let roll=Math.random()*totalWeight;
  let selected=available[available.length-1];
- for(const group of available){roll-=group.tier.weight;if(roll<0){selected=group;break}}
+ for(const group of available){
+  roll-=group.weight;
+  if(roll<0){selected=group;break}
+ }
  return selected.items[Math.floor(Math.random()*selected.items.length)];
 }
 function openCase(){if(revealing)return;const cost=cases[state.caseId].price*qty;if(state.balance<cost){notify('Недостаточно БК! Нужно '+money(cost)+' БК, у тебя '+money(state.balance)+' БК.');return}
