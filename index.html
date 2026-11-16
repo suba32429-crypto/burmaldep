@@ -593,7 +593,7 @@ async function refreshSharedData(){
 }
 async function pingPresence(){
  if(!currentPlayer)return;
- try{const data=await apiRequest('presence','POST',{});$('onlineCount').textContent=data.online;const me=await apiRequest('me');currentPlayer={...currentPlayer,...me.user};if($('profileModal').classList.contains('show'))$('profileStats').innerHTML='Время в игре: <b>'+formatPlaytime(currentPlayer.total_play_seconds||0)+'</b><br>Статус: онлайн';}
+ try{const data=await apiRequest('presence','POST',{});$('onlineCount').textContent=data.online;currentPlayer.total_play_seconds=Number(data.total_play_seconds)||currentPlayer.total_play_seconds||0;if($('profileModal').classList.contains('show'))$('profileStats').innerHTML='Время в игре: <b>'+formatPlaytime(currentPlayer.total_play_seconds||0)+'</b><br>Статус: онлайн';}
  catch(e){}
 }
 $('authOpen').addEventListener('click',()=>{
@@ -640,6 +640,6 @@ $('authClose').addEventListener('click',()=>$('authModal').classList.remove('sho
 $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.currentTarget.classList.remove('show')});
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
 loadCurrentPlayer();
-setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else refreshSharedData();},15000);
-setInterval(pingPresence,30000);
+setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else refreshSharedData();},60000);
+setInterval(pingPresence,60000);
 </script></body></html>
