@@ -123,23 +123,23 @@ export default async function handler(req, res) {
       return send(res,200,{user:profile.rows[0],items:items.rows});
     }
     if (path === "presence" && req.method === "POST") {
-      await pool.query("UPDATE players SET total_play_seconds=total_play_seconds+LEAST(60,GREATEST(0,FLOOR(EXTRACT(EPOCH FROM (now()-(SELECT last_seen_at FROM player_sessions WHERE id=$1)))))) WHERE id=$2",[user.session_id,user.id]);
+      const playtime = await pool.query("UPDATE players SET total_play_seconds=total_play_seconds+LEAST(60,GREATEST(0,FLOOR(EXTRACT(EPOCH FROM (now()-(SELECT last_seen_at FROM player_sessions WHERE id=$1)))))) WHERE id=$2 RETURNING total_play_seconds",[user.session_id,user.id]);
       await pool.query("UPDATE player_sessions SET last_seen_at=now(),expires_at=now()+interval '30 days' WHERE id=$1",[user.session_id]);
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
-      return send(res,200,{online:count.rows[0].online});
+      return send(res,200,{online:count.rows[0].online,total_play_seconds:Number(playtime.rows[0]?.total_play_seconds)||0});
     }
     if (path === "feed" && req.method === "GET") {
       const rows = await pool.query(`SELECT DISTINCT ON (p.id) p.id,p.username,p.avatar_url
         FROM player_sessions s JOIN players p ON p.id=s.player_id
         WHERE s.expires_at>now() AND s.last_seen_at>now()-interval '90 seconds'
-        ORDER BY p.id,s.last_seen_at DESC LIMIT 30`);
+        ORDER BY p.id,s.last_seen_at DESC LIMIT 20`);
       const count = await pool.query("SELECT count(DISTINCT player_id)::int AS online FROM player_sessions WHERE expires_at>now() AND last_seen_at>now()-interval '90 seconds'");
       const events = await pool.query(`SELECT id,username,avatar_url,item_name,item_image,case_title,item_value,rarity,created_at
-        FROM activity_events WHERE event_type = 'upgrade_visit' ORDER BY created_at DESC LIMIT 30`);
+        FROM activity_events WHERE event_type = 'upgrade_visit' ORDER BY created_at DESC LIMIT 12`);
       const inventoryItems = await pool.query(`SELECT i.id,i.item_name,i.item_image,i.item_value,i.rarity,i.updated_at,
         p.username,p.avatar_url
         FROM player_inventory_items i JOIN players p ON p.id=i.player_id
-        ORDER BY i.updated_at DESC,i.id DESC LIMIT 30`);
+        ORDER BY i.updated_at DESC,i.id DESC LIMIT 12`);
       return send(res,200,{players:rows.rows,online:count.rows[0].online,events:events.rows,inventoryItems:inventoryItems.rows});
     }
 
