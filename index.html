@@ -202,8 +202,10 @@
 .speedToggle.active{border-color:#ffd45f!important;color:#ffd45f;background:linear-gradient(145deg,#49331a,#2b1b12)!important;box-shadow:0 0 14px #ffc85755,inset 0 1px 0 #ffffff20}
 .upgradeBoxHead{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .upgradeSpeedToggle{flex:0 0 38px!important;width:38px;min-width:38px!important;height:34px;font-size:18px!important}
-.reelLanes.multi{align-content:start;overflow-x:hidden;direction:ltr}
-.reelLanes.multi:not(.mega) .lane:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - 4px);justify-self:center}
+.reelLanes.multi{align-content:start;overflow-x:hidden;direction:ltr;max-height:none;grid-template-columns:repeat(6,minmax(0,1fr))}
+.reelLanes.multi:not(.mega) .lane:nth-child(-n+3){grid-column:span 2}
+.reelLanes.multi:not(.mega) .lane:nth-child(4){grid-column:2/span 2}
+.reelLanes.multi:not(.mega) .lane:nth-child(5){grid-column:4/span 2}
 .reelLanes.multi .lane,.reelLanes.mega .lane{contain:layout paint}
 .laneWindow,.laneTrack{direction:ltr}
 .laneTrack{flex-direction:row}
