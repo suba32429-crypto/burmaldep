@@ -354,6 +354,7 @@ for(let i=0;i<eliteItems.length;i++){const item=eliteItems[i];items.push({id:ite
 let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
+if(!cases[state.caseId])state.caseId=0;
 let qty=1,revealing=false;let upgradeSourceIndex=null;let upgradePercent=75;let upgradeTargetId=null;let upgradeSpinAngle=0;let upgradeSpinning=false;const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return Math.round(n).toLocaleString('ru-RU')}
