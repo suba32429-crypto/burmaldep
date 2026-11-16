@@ -82,9 +82,24 @@ async function getUser(req) {
 }
 export default async function handler(req, res) {
   try {
-    await ensureSchema();
     const path = new URL(req.url, "https://local.invalid").pathname.replace(/^\/api\/?/, "").replace(/\/$/, "");
     if (req.method === "OPTIONS") return res.status(204).end();
+
+    const authHeader = String(req.headers.authorization || "");
+    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (path === "register" || path === "login" || bearer.startsWith("sb_")) {
+      const target = "https://qgsugmiaryvqixsypfgw.supabase.co/functions/v1/burmaldep-api/" + path + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "");
+      const upstream = await fetch(target, {
+        method: req.method,
+        headers: { "Content-Type": "application/json", ...(authHeader ? { Authorization: authHeader } : {}) },
+        body: req.method === "GET" || req.method === "HEAD" ? undefined : JSON.stringify(req.body || {})
+      });
+      const payload = await upstream.json().catch(() => ({ error: "Не удалось прочитать ответ новой базы" }));
+      if (path !== "login" || upstream.status !== 404) return send(res, upstream.status, payload);
+      // If the account is not in Supabase yet, let the legacy Neon login path try it.
+    }
+
+    await ensureSchema();
 
     if (path === "register" && req.method === "POST") {
       const username = String(req.body?.username || "").trim();
