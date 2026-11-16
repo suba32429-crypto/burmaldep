@@ -481,15 +481,18 @@ document.querySelectorAll('.tab[data-page]').forEach(b=>b.addEventListener('clic
 $('goInventory').addEventListener('click',()=>switchPage('inventory'));
 function drawDrop(caseId){
  const casePrice=cases[caseId].price;
- // Каждый кейс получает доступ к редким глобальным наградам; их шанс зависит от отношения цены предмета к цене кейса.
+ // Вес награды зависит от её стоимости относительно цены выбранного кейса.
+ // Для кейса за 1 000 БК: до ~1 700 — частые, около 2 000 — реже,
+ // 10 000 — редкие, 50 000 — очень редкие, 100 000+ — сверхредкие.
  const pool=items.filter(x=>x.caseId===caseId||x.bonus||x.elite||x.megaBoss);
  const tiers=[
-  {max:2,weight:80},
-  {max:10,weight:10},
-  {max:50,weight:5},
-  {max:Infinity,weight:5}
+  {min:0,max:1.7,weight:80},
+  {min:1.7,max:2,weight:70},
+  {min:2,max:10,weight:10},
+  {min:10,max:50,weight:5},
+  {min:50,max:Infinity,weight:1}
  ];
- const available=tiers.map(tier=>({tier,items:pool.filter(item=>item.value/casePrice> (tier===tiers[0]?0:tiers[tiers.indexOf(tier)-1].max) && item.value/casePrice<=tier.max)})).filter(group=>group.items.length);
+ const available=tiers.map(tier=>({tier,items:pool.filter(item=>{const ratio=item.value/casePrice;return ratio>tier.min&&ratio<=tier.max})})).filter(group=>group.items.length);
  if(!available.length)return pool[Math.floor(Math.random()*pool.length)];
  const totalWeight=available.reduce((sum,group)=>sum+group.tier.weight,0);
  let roll=Math.random()*totalWeight;
