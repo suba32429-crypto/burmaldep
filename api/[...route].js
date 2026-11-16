@@ -91,7 +91,7 @@ export default async function handler(req, res) {
       const target = "https://qgsugmiaryvqixsypfgw.supabase.co/functions/v1/burmaldep-api/" + path + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "");
       const upstream = await fetch(target, {
         method: req.method,
-        headers: { "Content-Type": "application/json", ...(authHeader ? { Authorization: authHeader } : {}) },
+        headers: { "Content-Type": "application/json", "apikey": process.env.SUPABASE_PUBLISHABLE_KEY || "", ...(authHeader ? { Authorization: authHeader } : {}) },
         body: req.method === "GET" || req.method === "HEAD" ? undefined : JSON.stringify(req.body || {})
       });
       const payload = await upstream.json().catch(() => ({ error: "Не удалось прочитать ответ новой базы" }));
