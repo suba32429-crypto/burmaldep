@@ -309,12 +309,13 @@ const photos=[
 'https://aif-s3.aif.ru/images/036/445/2b1aeaa2b7cb69d4995d3129f3708a57.jpg',
 'https://cdni-vm.servicecdn.ru/2024.02/original/720_65ce2e2c82682c71d4024cb5.jpg'
 ];
+photos.push('assets/items/melliy.webp','assets/items/prostoy-boss.webp','assets/items/omaygat.webp','assets/items/bogatyy-andryukha.webp','assets/items/bolshoy-burmaldlets.webp','assets/items/alyj-zhir-ovec.webp','assets/items/mama-ptitsa.webp','assets/items/nachalnik.webp','assets/items/aura-v-tazike.webp','assets/items/bogatyy-vor.webp','assets/items/pomylsya-orekh.webp');
 const caseNames=['Стартовый','Бурма','Меллстрой','Неоновый','Золотой','Королевский','Секретный','Элитный','Алмазный','Императорский','Мега Бурма','Бурмалд сливы'];
 const wordA=['Классический','Неоновый','Золотой','Мемный','Легендарный','Секретный','Стримовый','Премиальный','Ретро','Космический','Кристальный','Тёмный','Ультра','Королевский','Фиолетовый','Огненный','Ледяной','Элитный','Сапфировый','Бурмальный'];
 const wordB=['портрет','аватар','кадр со стрима','образ','фотокарточка','значок','постер','стикер','эмблема','коллекционная карта'];
 const wordC=['в очках','в кепке','в худи','с улыбкой','на стриме','в зелёном жилете','в чёрной футболке','с часами','из архива','для коллекции'];
-const rarities=['Обычный','Редкий','Эпический','Легендарный','Секретный'];
-const rarityColors=['#aaa3b8','#45baff','#d65dff','#ffc849','#ff547c'];
+const rarities=['Обычный','Редкий','Эпический','Легендарный','Секретный','Мифический'];
+const rarityColors=['#aaa3b8','#45baff','#d65dff','#ffc849','#ff547c','#ff43d2'];
 const casePrices=[2000,5000,10000,20000,35000,60000,100000,175000,300000,500000,750000,1000000];
 const cases=caseNames.map((name,i)=>({id:i,name,photo:i%photos.length,price:casePrices[i]}));
 const items=[];
@@ -366,6 +367,12 @@ const eliteItems=[
  {name:'Бурмалда: финальная форма',value:1000000}
 ];
 for(let i=0;i<eliteItems.length;i++){const item=eliteItems[i];items.push({id:items.length,caseId:-1,...item,rarity:'Секретный',color:rarityColors[4],photo:i,elite:true})}
+const premiumItems=[];
+for(const [name,value,asset] of [["Меллий",20000000,"melliy"],["Просто босс, просто начальник",30000000,"prostoy-boss"],["Омайгат",40000000,"omaygat"],["Богатый Андрюха",50000000,"bogatyy-andryukha"],["Большой Бурмалдлец",60000000,"bolshoy-burmaldlets"],["Алый жир овец",70000000,"alyj-zhir-ovec"],["Мама птица",80000000,"mama-ptitsa"],["Начальник",90000000,"nachalnik"],["Я помылся — аура в тазике",100000000,"aura-v-tazike"],["Богатый вор",110000000,"bogatyy-vor"],["Я помылся — орiх",120000000,"pomylsya-orekh"]]){
+ const item={id:items.length,caseId:12,name,value,rarity:'Мифический',color:rarityColors[5],image:'assets/items/'+asset+'.webp',boss:true,mythic:true};
+ items.push(item);premiumItems.push(item);
+}
+cases.push({id:12,name:'Я помылся — аура в тазике',photo:photos.indexOf('assets/items/aura-v-tazike.webp'),price:50000000,itemIds:premiumItems.map(item=>item.id),mythicOnly:true});
 let state={balance:12450,caseId:0,inventory:[],openingCount:0};
 try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
@@ -379,12 +386,13 @@ function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');c
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
 function updateOpenButton(){$('openCase').textContent='Открыть кейс · '+money(cases[state.caseId].price*qty)+' БК';$('openCase').disabled=revealing}
 function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=&quot;'+esc(fallbackSrc)+'&quot;">'}
-function itemImg(item){const url=item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
+function itemImg(item){const url=item.image?item.image:item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
 function itemCard(item,inventoryIndex){return '<article class="invCard" style="--rarity:'+item.color+'"><div class="bigImg">'+itemImg(item)+'</div><div class="details"><b>'+esc(item.name)+'</b><small>'+item.rarity+'</small><strong>'+money(item.value)+' БК</strong><button onclick="sellOne('+inventoryIndex+')">Продать за '+money(item.value)+' БК</button></div></article>'}
 function reelCard(item,selected=false){return '<div class="reelCard '+(selected?'selected':'')+'" style="--rarity:'+item.color+'">'+itemImg(item)+'<strong style="color:'+item.color+'">'+esc(item.name)+'</strong></div>'}
-function renderLanes(previewOnly=false){let shell=$('reelLanes');let count=qty;shell.classList.toggle('multi',count>=5);shell.classList.toggle('mega',count>=25);shell.innerHTML='';if(previewOnly){let arr=items.filter(x=>x.caseId===state.caseId).slice(0,6);shell.innerHTML=arr.map(x=>'<div class="lane"><div class="laneWindow"><div class="laneTrack">'+arr.map(y=>reelCard(y)).join('')+'</div></div></div>').join('');return}}
+function getCaseItems(caseId){const selected=cases[caseId];if(!selected)return [];if(Array.isArray(selected.itemIds))return selected.itemIds.map(id=>items[id]).filter(Boolean);return items.filter(item=>item.caseId===caseId)}
+function renderLanes(previewOnly=false){let shell=$('reelLanes');let count=qty;shell.classList.toggle('multi',count>=5);shell.classList.toggle('mega',count>=25);shell.innerHTML='';if(previewOnly){let arr=getCaseItems(state.caseId).slice(0,6);shell.innerHTML=arr.map(x=>'<div class="lane"><div class="laneWindow"><div class="laneTrack">'+arr.map(y=>reelCard(y)).join('')+'</div></div></div>').join('');return}}
 function renderCaseStrip(){let s=$('caseStrip');s.innerHTML=cases.map(c=>'<button class="caseTile '+(c.id===state.caseId?'active':'')+'" data-case="'+c.id+'"><div class="tileImg">'+makeImg(photos[c.photo],c.name)+'</div><b>'+esc(c.name)+'</b><small>'+money(c.price)+' БК</small></button>').join('');s.querySelectorAll('[data-case]').forEach(b=>b.addEventListener('click',()=>selectCase(Number(b.dataset.case))))}
-function selectCase(id){state.caseId=id;save();$('selectedCaseName').textContent='Кейс: '+cases[id].name;$('selectedCaseImage').src=photos[cases[id].photo];$('caseProgress').textContent='В кейсе 100 основных предметов · доступны редкие награды';updateBalance();renderCaseStrip();renderLanes(true)}
+function selectCase(id){state.caseId=id;save();$('selectedCaseName').textContent='Кейс: '+cases[id].name;$('selectedCaseImage').src=photos[cases[id].photo];$('caseProgress').textContent=cases[id].mythicOnly?'В кейсе '+getCaseItems(id).length+' мифических предметов':'В кейсе '+getCaseItems(id).length+' основных предметов · доступны редкие награды';updateBalance();renderCaseStrip();renderLanes(true)}
 
 
 function getUpgradeSource(){
@@ -509,6 +517,8 @@ function switchPage(page){document.querySelectorAll('.tab[data-page]').forEach(b
 document.querySelectorAll('.tab[data-page]').forEach(b=>b.addEventListener('click',()=>{if(!b.disabled)switchPage(b.dataset.page)}));
 $('goInventory').addEventListener('click',()=>switchPage('inventory'));
 function drawDrop(caseId){
+ const selectedCase=cases[caseId];
+ if(Array.isArray(selectedCase.itemIds)){const specialPool=selectedCase.itemIds.map(id=>items[id]).filter(Boolean);return specialPool.length?specialPool[Math.floor(Math.random()*specialPool.length)]:null;}
  const casePrice=cases[caseId].price;
  // Диапазоны всегда рассчитываются от цены именно выбранного кейса.
  // Например, для кейса 1 000: обычные награды до 2 000,
