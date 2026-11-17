@@ -322,10 +322,13 @@ const compactItemNames=['Бурма на стриме','Меллстрой в о
 for(let c=0;c<50;c++)for(let j=0;j<100;j++){
  const id=c*100+j,boss=j<10;
  const rarity=boss?4:(j<35?0:j<62?1:j<82?2:3);
- const name=boss?(j===0?'Босс Меллстрой':'Босс Меллстрой · образ '+(j+1)):compactItemNames[(j*7+c*3)%compactItemNames.length];
+ const caseLabel=caseNames[c]||'Бурма';
+ const name=boss
+  ? 'Босс '+caseLabel+' · '+wordA[(j+c*3)%wordA.length]+' '+wordB[(j*3+c)%wordB.length]+' '+wordC[(j*7+c)%wordC.length]
+  : wordA[(j+c*5)%wordA.length]+' '+wordB[(j*3+c*2)%wordB.length]+' '+wordC[(j*7+c*4)%wordC.length];
  const basePrice=cases[c]?.price||5000;
  const value=boss?Math.round(basePrice*10):Math.round(basePrice*(0.8+((j*37+c*13)%41)/100));
- items.push({id,caseId:c,name,rarity:rarities[rarity],color:rarityColors[rarity],photo:boss?1:(id*5+c*3)%photos.length,value,boss});
+ items.push({id,caseId:c,name,rarity:rarities[rarity],color:rarityColors[rarity],photo:(j*5+c*3)%photos.length,value,boss});
 }
 const bonusPhotos=[
 'https://pbs.twimg.com/media/GJPCbp6XkAAPl-O.jpg',
