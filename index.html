@@ -369,7 +369,7 @@ const eliteItems=[
 for(let i=0;i<eliteItems.length;i++){const item=eliteItems[i];items.push({id:items.length,caseId:-1,...item,rarity:'Секретный',color:rarityColors[4],photo:i,elite:true})}
 const premiumItems=[];
 for(const [name,value,asset] of [["Меллий",20000000,"melliy"],["Просто босс, просто начальник",30000000,"prostoy-boss"],["Омайгат",40000000,"omaygat"],["Богатый Андрюха",50000000,"bogatyy-andryukha"],["Большой Бурмалдлец",60000000,"bolshoy-burmaldlets"],["Алый жир овец",70000000,"alyj-zhir-ovec"],["Мама птица",80000000,"mama-ptitsa"],["Начальник",90000000,"nachalnik"],["Я помылся — аура в тазике",100000000,"aura-v-tazike"],["Богатый вор",110000000,"bogatyy-vor"],["Я помылся — орiх",120000000,"pomylsya-orekh"]]){
- const item={id:items.length,caseId:12,name,value,rarity:'Мифический',color:rarityColors[5],image:'assets/items/'+asset+'.webp',boss:true,mythic:true};
+ const item={id:items.length,caseId:-2,name,value,rarity:'Мифический',color:rarityColors[5],image:'assets/items/'+asset+'.webp',boss:true,mythic:true};
  items.push(item);premiumItems.push(item);
 }
 cases.push({id:12,name:'Я помылся — аура в тазике',photo:photos.indexOf('assets/items/aura-v-tazike.webp'),price:50000000,itemIds:premiumItems.map(item=>item.id),mythicOnly:true});
@@ -554,7 +554,7 @@ function drawDrop(caseId){
 }
 function openCaseCore(){if(revealing)return;const cost=cases[state.caseId].price*qty;if(state.balance<cost){notify('Недостаточно БК! Нужно '+money(cost)+' БК, у тебя '+money(state.balance)+' БК.');return}
  state.balance-=cost;save();updateBalance();revealing=true;let winners=Array.from({length:qty},()=>drawDrop(state.caseId));let lanes=$('reelLanes');lanes.classList.toggle('multi',qty>=5);lanes.classList.toggle('mega',qty>=25);lanes.innerHTML='';
- const laneNodes=[];const pool=items.filter(x=>x.caseId===state.caseId);const reelPool=pool.concat(items.filter(x=>x.caseId===-1));
+ const laneNodes=[];const selectedCase=cases[state.caseId];const isolatedCase=Array.isArray(selectedCase.itemIds);const pool=isolatedCase?selectedCase.itemIds.map(id=>items[id]).filter(Boolean):items.filter(x=>x.caseId===state.caseId);const reelPool=isolatedCase?pool:pool.concat(items.filter(x=>x.caseId===-1));
  for(let n=0;n<qty;n++){let lane=document.createElement('div');lane.className='lane';lane.innerHTML='<div class="laneLabel">ПОЛОСА '+(n+1)+' / '+qty+'</div><div class="laneWindow"><div class="laneTrack"></div></div>';let track=lane.querySelector('.laneTrack');let before=Array.from({length:18},()=>reelPool[Math.floor(Math.random()*reelPool.length)]);let after=Array.from({length:4},()=>reelPool[Math.floor(Math.random()*reelPool.length)]);track.innerHTML=before.map(x=>reelCard(x)).join('')+reelCard(winners[n],true)+after.map(x=>reelCard(x)).join('');lanes.appendChild(lane);laneNodes.push({lane,track,targetIndex:18})}
  $('openCase').textContent='КЕЙС ОТКРЫВАЕТСЯ…';$('openCase').disabled=true;
  const spinDuration=fastCaseOpen?90:1850,finishDelay=fastCaseOpen?120:2050;
