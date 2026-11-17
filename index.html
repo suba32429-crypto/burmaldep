@@ -523,7 +523,7 @@ function sellOne(index){const id=state.inventory[index];if(id===undefined)return
 $('sellAll').addEventListener('click',()=>{const keep=[],fav=[];let total=0;state.inventory.forEach((id,i)=>{if(state.favoriteSlots[i]){keep.push(id);fav.push(true)}else total+=items[id].value});if(!total){notify('Нет предметов, доступных для продажи');return}state.inventory=keep;state.favoriteSlots=fav;state.balance+=total;save();updateBalance();renderInventoryPage();renderUpgrade();notify('Проданы все незащищённые предметы за '+money(total)+' БК')});
 $('invSort').addEventListener('change',renderInventoryPage);$('invFilter').addEventListener('change',renderInventoryPage);
 $('allCases').addEventListener('click',openCaseMenu);
-$('selectedCaseName').textContent='Кейс: '+cases[state.caseId].name;$('selectedCaseImage').src=photos[cases[state.caseId].photo];$('caseProgress').textContent=cases[state.caseId].mythicOnly?'В кейсе '+getCaseItems(state.caseId).length+' мифических предметов':'В кейсе '+getCaseItems(state.caseId).length+' основных предметов · доступны редкие награды';renderCaseStrip();renderLanes(true);renderInventoryPeek();updateBalance();
+$('selectedCaseName').textContent='Кейс: '+cases[state.caseId].name;$('selectedCaseImage').src=caseImage(cases[state.caseId]);$('caseProgress').textContent=cases[state.caseId].mythicOnly?'В кейсе ровно '+getCaseItems(state.caseId).length+' мифических предметов':'В кейсе '+getCaseItems(state.caseId).length+' доступных предметов';renderCaseStrip();renderCaseContents();renderLanes(true);renderInventoryPeek();updateBalance();
 
 /* Shared player accounts, avatars, online presence and feed */
 const API_BASE='/api/';
