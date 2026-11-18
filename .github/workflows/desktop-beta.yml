@@ -1,0 +1,34 @@
+name: Build BURMALDEP Windows beta
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/profile-live-feed]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop-beta.yml'
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm install
+      - name: Build Windows installer
+        working-directory: desktop
+        run: npm run dist
+      - name: Publish beta installer
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pc-beta-latest
+          name: BURMALDEP PC — БЕТА-ТЕСТ
+          prerelease: true
+          make_latest: false
+          files: desktop/dist/BURMALDEP-Setup.exe
+          overwrite_files: true
+          fail_on_unmatched_files: true
