@@ -251,9 +251,10 @@
 .betaLaunchActions button:active{transform:translateY(0) scale(.98)}
 @media(max-width:760px){.betaLaunch{align-items:stretch;flex-direction:column}.betaLaunchActions{display:grid;grid-template-columns:1fr 1fr}.betaLaunchActions button{width:100%;min-height:42px}.app{padding-bottom:18px}}
 @media(max-width:420px){.betaLaunch{padding:10px}.betaLaunchInfo{align-items:flex-start}.betaLaunchInfo b{font-size:12px}.betaLaunchInfo small{font-size:10px}.betaPill{font-size:9px;padding:5px 7px}.betaLaunchActions{grid-template-columns:1fr}.caseHead{gap:7px}.caseCost{font-size:9px}}
-n
 .mobileBottomNav{display:none}
 @media(max-width:760px){
+/* Mobile-only app layout: hide the fake desktop window chrome. */
+.windowbar{display:none!important}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .app{display:flex;flex-direction:column;gap:10px;padding:8px;min-height:0}
 .left{display:contents}.profile{display:none}.center{order:1;width:100%;gap:9px}
