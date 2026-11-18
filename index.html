@@ -281,7 +281,7 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 @media(min-width:761px){.mobileBottomNav{display:none!important}}
 
 /* Burmaldep mode selection */
-.helperBadge{display:inline-flex;align-items:center;justify-content:center;margin-left:5px;width:19px;height:19px;border-radius:50%;font-size:12px;vertical-align:middle;background:linear-gradient(145deg,#f5d46b,#a66b20);color:#241707;border:1px solid #ffe49a}.modeChoices{grid-template-columns:repeat(3,minmax(0,1fr))}.modeChoice.helperChoice{border-color:#86602c;background:linear-gradient(145deg,#302417,#211832)}@media(max-width:700px){.modeChoices{grid-template-columns:1fr}}
+.helperBadge{display:inline-flex;align-items:center;justify-content:center;margin-left:5px;width:24px;height:27px;vertical-align:middle;flex:none}.helperBadge svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 5px #38bdf866)}.modeChoices{grid-template-columns:repeat(3,minmax(0,1fr))}.modeChoice.helperChoice{border-color:#86602c;background:linear-gradient(145deg,#302417,#211832)}@media(max-width:700px){.modeChoices{grid-template-columns:1fr}}
 
 .modeGate{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(ellipse at 50% 0,#291448 0,#090812 65%);}
 .modeGate.hidden{display:none}.modeCard{width:min(560px,100%);padding:26px;border:1px solid #523477;border-radius:20px;background:linear-gradient(145deg,#191329,#100d1b);box-shadow:0 20px 80px #0009;text-align:center}.modeCard h1{margin:0 0 8px;font-size:clamp(24px,5vw,34px);color:#e7c7ff}.modeLead{margin:0 auto 22px;color:#b8accb;max-width:420px}.modeChoices{display:grid;grid-template-columns:1fr 1fr;gap:12px}.modeChoice{padding:18px 14px;border-radius:13px;border:1px solid #493263;background:#211832;color:#fff;text-align:left;cursor:pointer;transition:.18s}.modeChoice:hover{border-color:#b77cff;transform:translateY(-2px);box-shadow:0 8px 24px #8b20ff22}.modeChoice strong{display:block;font-size:17px;margin:8px 0 5px}.modeChoice span{font-size:12px;color:#b9aecb;line-height:1.45}.modeGlyph{font-size:25px}.modeFine{margin:17px 0 0;font-size:11px;color:#92869f}.modeNotice{position:fixed;inset:0;z-index:1001;display:none;align-items:center;justify-content:center;padding:18px;background:#05040be8}.modeNotice.show{display:flex}.modeNoticeCard{width:min(470px,100%);padding:22px;border-radius:16px;background:#171225;border:1px solid #69439a}.modeNoticeCard h2{margin:0 0 10px}.modeNoticeCard p{color:#c1b5d0;font-size:13px;line-height:1.6}.modeNoticeActions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}.modeNoticeActions button{padding:10px 15px;border-radius:9px;border:1px solid #604080;background:#241a37;color:#fff;font-weight:850;cursor:pointer}.modeNoticeActions .primary{background:linear-gradient(100deg,#9227ee,#6415cb);border-color:#b66cff}
@@ -647,6 +647,7 @@ async function apiRequest(route,method='GET',body=null){
  return data;
 }
 function creatorBadge(isCreator){return isCreator?'<span class="creatorVerified" title="Создатель Burmaldep" aria-label="Создатель Burmaldep">✓</span>':''}
+function optimizedBadge(enabled){return enabled?'<span class="helperBadge" title="Помощник сети Burmaldep" aria-label="Помощник сети Burmaldep"><svg viewBox="0 0 28 32" role="img" aria-hidden="true"><path d="M8 19 4 29l10-4 10 4-4-10" fill="#0284c7" stroke="#7dd3fc" stroke-width="1.4" stroke-linejoin="round"/><circle cx="14" cy="12" r="10" fill="#075985" stroke="#7dd3fc" stroke-width="2"/><circle cx="14" cy="12" r="7.4" fill="#0ea5e9" stroke="#bae6fd" stroke-width=".8"/><path d="m15.5 5.8-5 7h3l-1 5.4 5-7h-3z" fill="#e0f2fe" stroke="#fff" stroke-width=".45" stroke-linejoin="round"/></svg></span>':''}
 function avatarMarkup(url){return url?'<img src="'+esc(url)+'" alt="Аватар">':'👤'}
 function applyMultiItemUpgradeSetting(){
  multiItemUpgradeEnabled=true;
@@ -654,7 +655,7 @@ function applyMultiItemUpgradeSetting(){
 async function loadGameSettings(){}
 function updateAccountUI(){
  $('authOpen').textContent='Войти';$('authOpen').style.display=currentPlayer?'none':'';$('modeSwitch').style.display=['offline','online','optimized'].includes(localStorage.getItem(MODE_KEY))?'':'none';
- $('accountName').innerHTML=currentPlayer?esc(currentPlayer.username)+creatorBadge(currentPlayer.is_creator)+(localStorage.getItem(MODE_KEY)==='optimized'?'<span class="helperBadge" title="Выбран режим оптимизированной сети">⚡</span>':''):'';
+ $('accountName').innerHTML=currentPlayer?esc(currentPlayer.username)+creatorBadge(currentPlayer.is_creator)+optimizedBadge(!!currentPlayer?.optimized_mode):'';
  $('avatarOpen').innerHTML=avatarMarkup(currentPlayer?.avatar_url);
  $('avatarOpen').title=currentPlayer?'Нажми, чтобы сменить аватар':'Войди, чтобы установить аватар';
 }
@@ -664,7 +665,7 @@ async function authenticate(mode){
  $('authHint').textContent='Подключаемся…';
  try{
   const data=await apiRequest(mode,'POST',{username,password});
-  localStorage.setItem(AUTH_KEY,data.token);currentPlayer=data.user;updateAccountUI();renderMissionProgress();
+  localStorage.setItem(AUTH_KEY,data.token);currentPlayer=data.user;updateAccountUI();await syncOptimizedMode();renderMissionProgress();
   $('authModal').classList.remove('show');$('authPassword').value='';
   notify(mode==='register'?'Аккаунт создан!':'Ты вошёл в аккаунт');
   if(mode==='register')await syncAccountInventory();else await loadAccountInventory();
@@ -673,7 +674,7 @@ async function authenticate(mode){
 }
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
- try{const data=await apiRequest('me');currentPlayer=data.user;applyMultiItemUpgradeSetting(data.user.multi_item_upgrade_enabled);updateAccountUI();renderMissionProgress();await loadAccountInventory();await refreshSharedData();await pingPresence();}
+ try{const data=await apiRequest('me');currentPlayer=data.user;applyMultiItemUpgradeSetting(data.user.multi_item_upgrade_enabled);updateAccountUI();await syncOptimizedMode();renderMissionProgress();await loadAccountInventory();await refreshSharedData();await pingPresence();}
  catch(e){
   if(e.status===401){localStorage.removeItem(AUTH_KEY);currentPlayer=null;}
   updateAccountUI();
@@ -683,7 +684,7 @@ async function loadCurrentPlayer(){
 function renderOnlinePlayers(players){
  const root=$('onlinePlayers');if(!root)return;
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
- root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=&quot;none&quot;">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+creatorBadge(p.is_creator)+'</span><i class="onlineDot"></i></button>').join('');
+ root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=&quot;none&quot;">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+creatorBadge(p.is_creator)+optimizedBadge(p.optimized_mode)+'</span><i class="onlineDot"></i></button>').join('');
 }
 async function openPlayerProfile(playerId){
  const modal=$('playerViewModal');if(!modal)return;
@@ -696,7 +697,7 @@ async function openPlayerProfile(playerId){
  try{
   const data=await apiRequest('player-profile?id='+encodeURIComponent(playerId));
   const player=data.user||{},items=data.items||[];
-  $('playerViewName').innerHTML=esc(player.username||'Профиль игрока')+creatorBadge(player.is_creator);
+  $('playerViewName').innerHTML=esc(player.username||'Профиль игрока')+creatorBadge(player.is_creator)+optimizedBadge(player.optimized_mode);
   $('playerViewAvatar').src=player.avatar_url||'';
   $('playerViewStats').innerHTML='Время в игре: <b>'+formatPlaytime(player.total_play_seconds||0)+'</b><br>Предметов в инвентаре: <b>'+items.length+'</b>';
   $('playerViewInventory').innerHTML=items.length?items.map(item=>'<div class="invCard">'+(item.item_image?'<img src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'')+'<b>'+esc(item.item_name)+'</b><small>'+money(Number(item.item_value)||0)+' БК</small></div>').join(''):'<div class="feedEmpty">Инвентарь пока пуст.</div>';
@@ -718,7 +719,7 @@ function renderPlayerItems(items){
  root.innerHTML=items.map((item,i)=>{
   const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'';
   const value=Number(item.item_value)>0?'<em>'+money(Number(item.item_value))+' БК</em>':'';
-  return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+creatorBadge(item.is_creator)+'</small>'+value+'</div></article>';
+  return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+creatorBadge(item.is_creator)+optimizedBadge(item.optimized_mode)+'</small>'+value+'</div></article>';
  }).join('');
 }
 let upgradeVisitPublished=false;
@@ -789,7 +790,8 @@ $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.curre
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
 const MODE_KEY='burmaldep-play-mode';
 let pendingMode='online';
-function applyPlayMode(mode){localStorage.setItem(MODE_KEY,mode);$('modeGate').classList.add('hidden');if(mode==='offline'){currentPlayer=null;updateAccountUI();$('authOpen').style.display='none';$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Офлайн-режим — сетевые игроки недоступны.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Офлайн-режим — общая лента отключена.</div>';notify('Включён офлайн-режим');return;} $('authOpen').style.display='';updateAccountUI();loadGameSettings();loadCurrentPlayer();notify(mode==='optimized'?'Выбран режим помощника сети':'Сетевой режим включён');}
+async function syncOptimizedMode(){if(!currentPlayer)return;const enabled=localStorage.getItem(MODE_KEY)==='optimized';if(!!currentPlayer.optimized_mode===enabled)return;const data=await apiRequest('optimized-mode','POST',{enabled});currentPlayer.optimized_mode=!!data.optimized_mode;updateAccountUI();}
+async function applyPlayMode(mode){localStorage.setItem(MODE_KEY,mode);$('modeGate').classList.add('hidden');if(mode==='offline'){if(apiToken())apiRequest('optimized-mode','POST',{enabled:false}).catch(e=>console.warn('Не удалось обновить общий статус:',e.message));currentPlayer=null;updateAccountUI();$('authOpen').style.display='none';$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Офлайн-режим — сетевые игроки недоступны.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Офлайн-режим — общая лента отключена.</div>';notify('Включён офлайн-режим');return;} $('authOpen').style.display='';updateAccountUI();loadGameSettings();await loadCurrentPlayer();if(currentPlayer)await syncOptimizedMode();notify(mode==='optimized'?'Выбран режим помощника сети':'Сетевой режим включён');}
 function askMode(mode){pendingMode=mode;$('modeNoticeTitle').textContent=mode==='optimized'?'Оптимизированная сеть — правила участия':'Подключение к сети';$('modeNoticeText').textContent=mode==='optimized'?'Вы добровольно выбираете статус помощника Burmaldep. Значок ⚡ появится возле вашего ника. Ручного изменения лимита ресурсов нет: допустимую нагрузку задаёт сама система с учётом оборудования. В любой момент можно отключить статус и вернуться в обычный сетевой режим. Личные файлы, пароли и чужие аккаунты недоступны. ВАЖНО: сейчас сохраняется только выбор режима и отображается значок; реальная передача вычислительных задач устройствам ещё не запущена, поэтому дополнительная нагрузка не создаётся.':'В сетевом режиме Burmaldep передаёт серверу необходимые данные аккаунта и прогресса. Устройство не обслуживает других игроков. Подтверждение обычного режима отключит статус помощника.';$('modeNotice').classList.add('show');}
 $('modeSwitch').addEventListener('click',()=>{$('modeGate').classList.remove('hidden');});
 $('chooseOffline').addEventListener('click',()=>applyPlayMode('offline'));
