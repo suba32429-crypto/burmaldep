@@ -76,6 +76,6 @@ jobs:
           name: BURMALDEP Android — БЕТА-ТЕСТ
           prerelease: true
           make_latest: false
-          files: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          files: android/app/build/outputs/apk/debug/app-debug.apk
           fail_on_unmatched_files: true
           overwrite_files: true
