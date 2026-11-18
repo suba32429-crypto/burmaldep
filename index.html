@@ -215,6 +215,23 @@
 .missionPanel{margin-top:11px;padding:14px;background:linear-gradient(120deg,#1c1730,#11101b);border:1px solid #55416b;border-radius:13px}.missionTitle{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.missionTitle span{color:#b68be0;font-size:9px;font-weight:950;letter-spacing:1.7px}.missionTitle h2{margin:5px 0;font-size:16px}.missionTitle small{font-size:10px;color:#9f94af}.missionTitle>strong{color:#f4d287;background:#2c251c;border:1px solid #665233;padding:7px 9px;border-radius:8px;font-size:11px;white-space:nowrap}.missionReward{margin:10px 0;color:#c8bad8;font-size:11px}.missionReward b{color:#fff}.missionProgressTrack{height:9px;border-radius:99px;background:#08070e;border:1px solid #38294a;overflow:hidden}.missionProgressBar{height:100%;width:0;background:linear-gradient(90deg,#7b43b1,#c28be9);border-radius:99px}.missionFoot{display:flex;justify-content:space-between;gap:10px;margin-top:8px;color:#a99eb7;font-size:10px}.missionFoot b{color:#eee4f6;white-space:nowrap}.missionFoot span{text-align:right}
 .invCard{position:relative}.invCard .bigImg{position:relative}.invCard .bigImg .invStar{position:absolute;z-index:3;right:8px;bottom:8px;top:auto;width:38px;height:34px;min-width:38px;margin:0;padding:0;display:grid;place-items:center;border:1px solid #78618f;border-radius:9px;background:#130f1dda;color:#d5c3e5;font-size:19px;line-height:1;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff10}.invCard .bigImg .invStar.active{background:linear-gradient(145deg,#49331a,#2b1b12);border-color:#ffd45f;color:#ffd66b;box-shadow:0 0 12px #ffc85740,inset 0 1px 0 #ffffff20}.invCard.isFavorite{border-color:#b58a4c;box-shadow:inset 0 0 0 1px #b58a4c44}.invCard .protectedTag{background:#3a301d;border-color:#826b35;color:#ffe2a0;cursor:default}.upgradeSourcePick.protected{opacity:.52;cursor:not-allowed}.profileDangerActions{display:flex;gap:8px;margin-top:11px}.profileDangerActions button{flex:1;padding:10px;border-radius:8px;border:1px solid #6c3946;background:#29151e;color:#ffc0ca;font-weight:850;cursor:pointer}.profileDangerActions button:last-child{background:#35121d;border-color:#a13d53;color:#ffb0bf}
 @media(max-width:850px){.caseMenuGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.caseContentsList{max-height:360px}}@media(max-width:540px){.caseMenuGrid{grid-template-columns:1fr}.caseMenuDialog{padding:13px}.missionFoot{flex-direction:column}.missionFoot span{text-align:left}.missionTitle h2{font-size:14px}}
+.creatorVerified{display:inline-grid;place-items:center;vertical-align:middle;width:15px;height:15px;margin-left:5px;border-radius:50%;background:#168cff;color:#fff;font-size:10px;line-height:1;font-weight:1000;box-shadow:0 0 8px #168cff66;flex:none}
+.authModalBack .authModal{max-height:88vh;overflow-y:auto;overscroll-behavior:contain}
+.profileSettings{margin-top:14px;padding:11px 12px;background:linear-gradient(145deg,#171326,#100d1a);border:1px solid #49345f;border-radius:10px}
+.profileSettingsHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.profileSettingsHead b{font-size:12px;color:#f4eaff}
+.profileSettingsHead span{font-size:8px;letter-spacing:.6px;color:#a98cbe;font-weight:900}
+.profileSettingRow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px;cursor:pointer}
+.profileSettingCopy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.profileSettingCopy b{font-size:11px;color:#f0e7fa}
+.profileSettingCopy small{font-size:10px;color:#a99dbb;line-height:1.4}
+.profileSettingRow input{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important;padding:0!important;pointer-events:none}
+.profileSwitch{position:relative;display:block;width:42px;height:24px;flex:none;border-radius:20px;background:#342941;border:1px solid #604d72;transition:.18s}
+.profileSwitch:after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#b7a9c7;transition:.18s}
+.profileSettingRow input:checked+.profileSwitch{background:#562a89;border-color:#b477f0;box-shadow:0 0 10px #8b20ff33}
+.profileSettingRow input:checked+.profileSwitch:after{transform:translateX(18px);background:#fff}
+.profileSettingRow input:focus-visible+.profileSwitch{outline:2px solid #c18aff;outline-offset:3px}
+.profileSettingsFuture{margin:8px 0 0;padding-top:8px;border-top:1px solid #302342;color:#887d9a;font-size:9px}
 </style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo"><img id="brandAvatar" alt="BURMALDEP"></span> Бурмалдеп</div></div><script>fetch("/burmaldep-avatar.jpg.b64").then(r=>{if(!r.ok)throw new Error("avatar");return r.text()}).then(b=>{const a=document.getElementById("brandAvatar");if(a)a.src="data:image/jpeg;base64,"+b.trim()}).catch(()=>{});</script>
 <div class="app">
@@ -281,6 +298,15 @@
 <button class="accountBtn" id="profileChangeAvatar" type="button" style="width:100%">Изменить аватарку</button>
 <input id="profileUsername" autocomplete="username" maxlength="20" placeholder="Новый ник (3–20 символов)">
 <div class="passwordFields"><input id="profileOldPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="Старый пароль"><input id="profileNewPassword" type="password" autocomplete="new-password" maxlength="128" placeholder="Новый пароль (от 8 символов)"><button class="accountBtn" id="profileChangePassword" type="button">Изменить пароль</button></div>
+<section class="profileSettings" aria-label="Настройки игры">
+ <div class="profileSettingsHead"><b>Настройки игры</b><span>ДРУГИЕ ПОЯВЯТСЯ ПОЗЖЕ</span></div>
+ <label class="profileSettingRow" for="shareUpgradeActivity">
+  <span class="profileSettingCopy"><b>Показывать вход в апгрейдер</b><small>Запись о посещении будет видна в общей активности.</small></span>
+  <input id="shareUpgradeActivity" type="checkbox" checked>
+  <span class="profileSwitch" aria-hidden="true"></span>
+ </label>
+ <p class="profileSettingsFuture">Другие настройки появятся здесь позже.</p>
+</section>
 <div class="authHint" id="profileHint"></div>
 <div class="profileModalActions"><button id="profileSave" type="button">Сохранить ник</button><button class="authClose" id="profileClose" type="button">Закрыть</button></div><div class="profileDangerActions"><button id="profileLogout" type="button">Выйти из аккаунта</button><button id="profileDelete" type="button">Удалить аккаунт</button></div>
 </div></div>
@@ -560,10 +586,11 @@ async function apiRequest(route,method='GET',body=null){
  if(!response.ok){const error=new Error(data.error||'Ошибка запроса');error.status=response.status;throw error;}
  return data;
 }
+function creatorBadge(isCreator){return isCreator?'<span class="creatorVerified" title="Создатель Burmaldep" aria-label="Создатель Burmaldep">✓</span>':''}
 function avatarMarkup(url){return url?'<img src="'+esc(url)+'" alt="Аватар">':'👤'}
 function updateAccountUI(){
  $('authOpen').textContent='Войти';$('authOpen').style.display=currentPlayer?'none':'';
- $('accountName').textContent=currentPlayer?currentPlayer.username:'';
+ $('accountName').innerHTML=currentPlayer?esc(currentPlayer.username)+creatorBadge(currentPlayer.is_creator):'';
  $('avatarOpen').innerHTML=avatarMarkup(currentPlayer?.avatar_url);
  $('avatarOpen').title=currentPlayer?'Нажми, чтобы сменить аватар':'Войди, чтобы установить аватар';
 }
@@ -592,7 +619,7 @@ async function loadCurrentPlayer(){
 function renderOnlinePlayers(players){
  const root=$('onlinePlayers');if(!root)return;
  if(!players.length){root.innerHTML='<div class="onlineEmpty">Пока никого нет в сети.</div>';return}
- root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=&quot;none&quot;">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+'</span><i class="onlineDot"></i></button>').join('');
+ root.innerHTML=players.map((p,i)=>'<button type="button" class="onlinePlayer" data-player-id="'+esc(p.id)+'" style="animation-delay:'+Math.min(i,8)*35+'ms">'+(p.avatar_url?'<img class="onlineAvatar" src="'+esc(p.avatar_url)+'" alt="" onerror="this.style.display=&quot;none&quot;">':'<span class="onlineAvatarFallback">👤</span>')+'<span class="onlinePlayerName">'+esc(p.username)+creatorBadge(p.is_creator)+'</span><i class="onlineDot"></i></button>').join('');
 }
 async function openPlayerProfile(playerId){
  const modal=$('playerViewModal');if(!modal)return;
@@ -605,7 +632,7 @@ async function openPlayerProfile(playerId){
  try{
   const data=await apiRequest('player-profile?id='+encodeURIComponent(playerId));
   const player=data.user||{},items=data.items||[];
-  $('playerViewName').textContent=player.username||'Профиль игрока';
+  $('playerViewName').innerHTML=esc(player.username||'Профиль игрока')+creatorBadge(player.is_creator);
   $('playerViewAvatar').src=player.avatar_url||'';
   $('playerViewStats').innerHTML='Время в игре: <b>'+formatPlaytime(player.total_play_seconds||0)+'</b><br>Предметов в инвентаре: <b>'+items.length+'</b>';
   $('playerViewInventory').innerHTML=items.length?items.map(item=>'<div class="invCard">'+(item.item_image?'<img src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'')+'<b>'+esc(item.item_name)+'</b><small>'+money(Number(item.item_value)||0)+' БК</small></div>').join(''):'<div class="feedEmpty">Инвентарь пока пуст.</div>';
@@ -627,12 +654,12 @@ function renderPlayerItems(items){
  root.innerHTML=items.map((item,i)=>{
   const image=item.item_image?'<img class="feedItemImage" src="'+esc(item.item_image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'';
   const value=Number(item.item_value)>0?'<em>'+money(Number(item.item_value))+' БК</em>':'';
-  return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+'</small>'+value+'</div></article>';
+  return '<article class="feedEvent playerItemRow" style="animation-delay:'+Math.min(i,8)*45+'ms">'+image+'<div class="feedCopy"><b>'+esc(item.item_name)+'</b><small>'+esc(item.username)+creatorBadge(item.is_creator)+'</small>'+value+'</div></article>';
  }).join('');
 }
 let upgradeVisitPublished=false;
 async function publishUpgradeVisit(){
- if(!currentPlayer||upgradeVisitPublished)return;
+ if(!currentPlayer||currentPlayer.share_upgrade_activity===false||upgradeVisitPublished)return;
  upgradeVisitPublished=true;
  try{await apiRequest('activity-view','POST',{});await refreshSharedData();}
  catch(e){upgradeVisitPublished=false;console.warn('Не удалось отправить событие активности:',e.message);}
@@ -660,9 +687,25 @@ function openProfile(){
  $('profileAvatarPreview').src=currentPlayer.avatar_url||'';
  $('profileStats').innerHTML='Время в игре: <b>'+formatPlaytime(currentPlayer.total_play_seconds||0)+'</b><br>Задание месяца: <b>'+formatPlaytime(currentPlayer.monthly_play_seconds||0)+' / 24 ч</b><br>Статус: онлайн';renderMissionProgress();
  $('profileOldPassword').value='';$('profileNewPassword').value='';
+ $('shareUpgradeActivity').checked=currentPlayer.share_upgrade_activity!==false;
  $('profileModal').classList.add('show');
 }
 $('avatarOpen').addEventListener('click',openProfile);
+$('shareUpgradeActivity').addEventListener('change',async e=>{
+ const control=e.currentTarget,previous=currentPlayer?.share_upgrade_activity!==false,enabled=control.checked;
+ control.disabled=true;
+ try{
+  const data=await apiRequest('settings','POST',{share_upgrade_activity:enabled});
+  currentPlayer.share_upgrade_activity=data.share_upgrade_activity!==false;
+  control.checked=currentPlayer.share_upgrade_activity;
+  if(currentPlayer.share_upgrade_activity)upgradeVisitPublished=false;
+  $('profileHint').textContent='Настройка сохранена.';
+  notify(currentPlayer.share_upgrade_activity?'Появление в активности включено':'Появление в активности отключено');
+ }catch(err){
+  control.checked=previous;
+  $('profileHint').textContent='Не удалось сохранить настройку: '+err.message;
+ }finally{control.disabled=false;}
+});
 $('profileLogout').addEventListener('click',()=>$('logoutConfirmModal').classList.add('show'));$('logoutCancel').addEventListener('click',()=>$('logoutConfirmModal').classList.remove('show'));
 $('logoutConfirm').addEventListener('click',()=>{save();localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();$('logoutConfirmModal').classList.remove('show');$('profileModal').classList.remove('show');updateAccountUI();renderMissionProgress();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть предметы игроков.</div>';notify('Ты вышел из аккаунта')});
 $('profileDelete').addEventListener('click',()=>{$('deleteAccountPassword').value='';$('deleteAccountHint').textContent='';$('deleteAccountModal').classList.add('show')});$('deleteAccountCancel').addEventListener('click',()=>$('deleteAccountModal').classList.remove('show'));
