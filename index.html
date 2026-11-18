@@ -279,7 +279,15 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 }
 @media(max-width:420px){.app{padding-left:6px;padding-right:6px}.topnav{padding:6px}.accountBtn{padding:8px 10px}.accountName{max-width:75px;font-size:11px}.topBalance{font-size:10px}.casePanel{padding:8px}.reelShell{min-height:195px}.mobileBottomNav button{font-size:9px}}
 @media(min-width:761px){.mobileBottomNav{display:none!important}}
+
+/* Burmaldep mode selection */
+.modeGate{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(ellipse at 50% 0,#291448 0,#090812 65%);}
+.modeGate.hidden{display:none}.modeCard{width:min(560px,100%);padding:26px;border:1px solid #523477;border-radius:20px;background:linear-gradient(145deg,#191329,#100d1b);box-shadow:0 20px 80px #0009;text-align:center}.modeCard h1{margin:0 0 8px;font-size:clamp(24px,5vw,34px);color:#e7c7ff}.modeLead{margin:0 auto 22px;color:#b8accb;max-width:420px}.modeChoices{display:grid;grid-template-columns:1fr 1fr;gap:12px}.modeChoice{padding:18px 14px;border-radius:13px;border:1px solid #493263;background:#211832;color:#fff;text-align:left;cursor:pointer;transition:.18s}.modeChoice:hover{border-color:#b77cff;transform:translateY(-2px);box-shadow:0 8px 24px #8b20ff22}.modeChoice strong{display:block;font-size:17px;margin:8px 0 5px}.modeChoice span{font-size:12px;color:#b9aecb;line-height:1.45}.modeGlyph{font-size:25px}.modeFine{margin:17px 0 0;font-size:11px;color:#92869f}.modeNotice{position:fixed;inset:0;z-index:1001;display:none;align-items:center;justify-content:center;padding:18px;background:#05040be8}.modeNotice.show{display:flex}.modeNoticeCard{width:min(470px,100%);padding:22px;border-radius:16px;background:#171225;border:1px solid #69439a}.modeNoticeCard h2{margin:0 0 10px}.modeNoticeCard p{color:#c1b5d0;font-size:13px;line-height:1.6}.modeNoticeActions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}.modeNoticeActions button{padding:10px 15px;border-radius:9px;border:1px solid #604080;background:#241a37;color:#fff;font-weight:850;cursor:pointer}.modeNoticeActions .primary{background:linear-gradient(100deg,#9227ee,#6415cb);border-color:#b66cff}
+@media(max-width:520px){.modeChoices{grid-template-columns:1fr}.modeCard{padding:20px}.modeChoice{padding:14px}}
 </style></head><body>
+<div class="modeGate" id="modeGate"><div class="modeCard"><h1>Добро пожаловать в Burmaldep</h1><p class="modeLead">Выбери, как хочешь играть. Режим можно будет изменить позже.</p><div class="modeChoices"><button class="modeChoice" id="chooseOffline" type="button"><span class="modeGlyph">◌</span><strong>Офлайн</strong><span>Играй локально без подключения к аккаунту и сетевым функциям.</span></button><button class="modeChoice" id="chooseOnline" type="button"><span class="modeGlyph">◎</span><strong>Сетевой режим</strong><span>Подключение к аккаунту, синхронизация инвентаря и взаимодействие с игроками.</span></button></div><p class="modeFine">Сетевой режим передаёт необходимые данные игрового аккаунта на сервер Burmaldep.</p></div></div>
+<div class="modeNotice" id="modeNotice"><div class="modeNoticeCard"><h2>Подключение к сети</h2><p>В сетевом режиме Burmaldep отправляет на наши серверы необходимые данные для входа, профиля, инвентаря и синхронизации прогресса. Обычная игра не использует ресурсы твоего устройства для обслуживания серверов. Если в будущем появится добровольная программа помощи сети, она будет отдельной настройкой с отдельным согласием.</p><div class="modeNoticeActions"><button id="cancelOnline" type="button">Назад</button><button class="primary" id="confirmOnline" type="button">Продолжить</button></div></div></div>
+
 <div class="windowbar"><div class="winbrand"><span class="winlogo"><img id="brandAvatar" alt="BURMALDEP"></span> Бурмалдеп</div></div><script>fetch("/burmaldep-avatar.jpg.b64").then(r=>{if(!r.ok)throw new Error("avatar");return r.text()}).then(b=>{const src="data:image/jpeg;base64,"+b.trim();["brandAvatar","profileAvatar"].forEach(id=>{const el=document.getElementById(id);if(el)el.src=src});let icon=document.querySelector("link[rel~=\"icon\"]");if(!icon){icon=document.createElement("link");icon.rel="icon";document.head.appendChild(icon)}icon.href=src}).catch(()=>{});</script>
 <div class="app">
 <aside class="left"><div class="profile"><img id="profileAvatar" alt="Аватар BURMALDEP"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
@@ -777,8 +785,13 @@ $('authRegister').addEventListener('click',()=>authenticate('register'));
 $('authClose').addEventListener('click',()=>$('authModal').classList.remove('show'));
 $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.currentTarget.classList.remove('show')});
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
-loadGameSettings();
-loadCurrentPlayer();
-setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else if(currentPlayer)refreshSharedData();else loadGameSettings();},60000);
-setInterval(pingPresence,60000);
+const MODE_KEY='burmaldep-play-mode';
+function applyPlayMode(mode){localStorage.setItem(MODE_KEY,mode);$('modeGate').classList.add('hidden');if(mode==='offline'){currentPlayer=null;updateAccountUI();$('authOpen').style.display='none';$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Офлайн-режим — сетевые игроки недоступны.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Офлайн-режим — общая лента отключена.</div>';notify('Включён офлайн-режим');}else{$('authOpen').style.display='';loadGameSettings();loadCurrentPlayer();notify('Сетевой режим включён');}}
+$('chooseOffline').addEventListener('click',()=>applyPlayMode('offline'));
+$('chooseOnline').addEventListener('click',()=>$('modeNotice').classList.add('show'));
+$('cancelOnline').addEventListener('click',()=>$('modeNotice').classList.remove('show'));
+$('confirmOnline').addEventListener('click',()=>$('modeNotice').classList.remove('show')||applyPlayMode('online'));
+const savedMode=localStorage.getItem(MODE_KEY);if(savedMode==='offline'||savedMode==='online')applyPlayMode(savedMode);
+setInterval(()=>{if(localStorage.getItem(MODE_KEY)!=='online')return;if(apiToken()&&!currentPlayer)loadCurrentPlayer();else if(currentPlayer)refreshSharedData();else loadGameSettings();},60000);
+setInterval(()=>{if(localStorage.getItem(MODE_KEY)==='online')pingPresence();},60000);
 </script></body></html>
