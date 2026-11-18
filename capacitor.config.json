@@ -3,7 +3,7 @@
   "appName": "BURMALDEP",
   "webDir": "www",
   "server": {
-    "url": "https://burmaldep-git-feature-profile-live-feed-suba32429-7845.vercel.app",
+    "url": "https://burmaldep.vercel.app",
     "cleartext": false,
     "androidScheme": "https"
   },
