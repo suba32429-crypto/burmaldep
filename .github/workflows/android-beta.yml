@@ -39,6 +39,15 @@ jobs:
             convert /tmp/burmaldep-avatar.jpg -resize "$2x$2^" -gravity center -extent "$2x$2" "$dir/ic_launcher.png"
             cp "$dir/ic_launcher.png" "$dir/ic_launcher_round.png"
           done
+          mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/mipmap-anydpi-v26
+          convert /tmp/burmaldep-avatar.jpg -resize '432x432^' -gravity center -extent 432x432 android/app/src/main/res/drawable-nodpi/burmaldep_foreground.png
+          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@android:color/black"/>
+            <foreground android:drawable="@drawable/burmaldep_foreground"/>
+          </adaptive-icon>
+          EOF
+          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
