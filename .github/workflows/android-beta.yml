@@ -64,3 +64,4 @@ jobs:
           make_latest: false
           files: android/app/build/outputs/apk/debug/app-debug.apk
           fail_on_unmatched_files: true
+          overwrite_files: true
