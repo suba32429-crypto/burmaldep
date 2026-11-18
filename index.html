@@ -305,16 +305,6 @@
 <button class="accountBtn" id="profileChangeAvatar" type="button" style="width:100%">Изменить аватарку</button>
 <input id="profileUsername" autocomplete="username" maxlength="20" placeholder="Новый ник (3–20 символов)">
 <div class="passwordFields"><input id="profileOldPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="Старый пароль"><input id="profileNewPassword" type="password" autocomplete="new-password" maxlength="128" placeholder="Новый пароль (от 8 символов)"><button class="accountBtn" id="profileChangePassword" type="button">Изменить пароль</button></div>
-<section class="profileSettings" id="adminSettings" aria-label="Настройки администратора" style="display:none">
- <div class="profileSettingsHead"><b>Настройки администратора</b><span>ТОЛЬКО СОЗДАТЕЛЬ</span></div>
- <div class="adminFeature">
-  <b>Выбор нескольких предметов в апгрейдере</b>
-  <small>Отключение уберёт мультивыбор у всех игроков. После этого в апгрейдере можно будет выбирать только один предмет за раз. Повторно включить функцию из интерфейса нельзя.</small>
-  <button class="adminFeatureButton" id="disableMultiItemUpgrade" type="button">Отключить для всех игроков</button>
-  <div class="adminFeatureStatus" id="multiItemUpgradeAdminStatus" role="status"></div>
- </div>
- <p class="profileSettingsFuture">Другие настройки администратора появятся здесь позже.</p>
-</section>
 <div class="authHint" id="profileHint"></div>
 <div class="profileModalActions"><button id="profileSave" type="button">Сохранить ник</button><button class="authClose" id="profileClose" type="button">Закрыть</button></div><div class="profileDangerActions"><button id="profileLogout" type="button">Выйти из аккаунта</button><button id="profileDelete" type="button">Удалить аккаунт</button></div>
 </div></div>
@@ -597,35 +587,10 @@ async function apiRequest(route,method='GET',body=null){
 }
 function creatorBadge(isCreator){return isCreator?'<span class="creatorVerified" title="Создатель Burmaldep" aria-label="Создатель Burmaldep">✓</span>':''}
 function avatarMarkup(url){return url?'<img src="'+esc(url)+'" alt="Аватар">':'👤'}
-function applyMultiItemUpgradeSetting(enabled){
- if(typeof enabled!=="boolean")return;
- const changed=multiItemUpgradeEnabled!==enabled;
- multiItemUpgradeEnabled=enabled;
- if(currentPlayer)currentPlayer.multi_item_upgrade_enabled=enabled;
- if(!enabled&&upgradeSourceIndexes.length>1)upgradeSourceIndexes=upgradeSourceIndexes.slice(0,1);
- if(changed)renderUpgrade();
- renderAdminSettings();
+function applyMultiItemUpgradeSetting(){
+ multiItemUpgradeEnabled=true;
 }
-function renderAdminSettings(){
- const panel=$('adminSettings'),button=$('disableMultiItemUpgrade'),status=$('multiItemUpgradeAdminStatus');
- if(!panel)return;
- const isAdmin=!!currentPlayer?.is_creator;
- panel.style.display=isAdmin?'block':'none';
- if(!isAdmin||!button||!status)return;
- if(multiItemUpgradeEnabled){
-  button.disabled=false;
-  button.textContent='Отключить для всех игроков';
-  status.textContent='Сейчас игроки могут выбирать несколько предметов.';
- }else{
-  button.disabled=true;
-  button.textContent='Мультивыбор отключён';
-  status.textContent='Готово: для всех игроков доступен только один предмет за попытку.';
- }
-}
-async function loadGameSettings(){
- try{const data=await apiRequest('settings');applyMultiItemUpgradeSetting(data.multi_item_upgrade_enabled);}
- catch(e){console.warn('Не удалось загрузить настройки игры:',e.message);}
-}
+async function loadGameSettings(){}
 function updateAccountUI(){
  $('authOpen').textContent='Войти';$('authOpen').style.display=currentPlayer?'none':'';
  $('accountName').innerHTML=currentPlayer?esc(currentPlayer.username)+creatorBadge(currentPlayer.is_creator):'';
@@ -726,26 +691,9 @@ function openProfile(){
  $('profileAvatarPreview').src=currentPlayer.avatar_url||'';
  $('profileStats').innerHTML='Время в игре: <b>'+formatPlaytime(currentPlayer.total_play_seconds||0)+'</b><br>Задание месяца: <b>'+formatPlaytime(currentPlayer.monthly_play_seconds||0)+' / 24 ч</b><br>Статус: онлайн';renderMissionProgress();
  $('profileOldPassword').value='';$('profileNewPassword').value='';
- renderAdminSettings();
  $('profileModal').classList.add('show');
 }
 $('avatarOpen').addEventListener('click',openProfile);
-$('disableMultiItemUpgrade').addEventListener('click',async()=>{
- if(!currentPlayer?.is_creator||!multiItemUpgradeEnabled)return;
- if(!confirm('Отключить выбор нескольких предметов для ВСЕХ игроков? После этого каждый сможет выбрать только один предмет за попытку.'))return;
- const button=$('disableMultiItemUpgrade'),status=$('multiItemUpgradeAdminStatus');
- button.disabled=true;status.textContent='Применяем настройку…';
- try{
-  const data=await apiRequest('settings','POST',{disable_multi_item_upgrade:true});
-  applyMultiItemUpgradeSetting(data.multi_item_upgrade_enabled);
-  $('profileHint').textContent='Мультивыбор отключён для всех игроков.';
-  notify('Выбор нескольких предметов отключён для всех');
- }catch(e){
-  status.textContent='Не удалось применить настройку: '+e.message;
-  button.disabled=false;
- }
- renderAdminSettings();
-});
 $('profileLogout').addEventListener('click',()=>$('logoutConfirmModal').classList.add('show'));$('logoutCancel').addEventListener('click',()=>$('logoutConfirmModal').classList.remove('show'));
 $('logoutConfirm').addEventListener('click',()=>{save();localStorage.removeItem(AUTH_KEY);currentPlayer=null;feedSeen.clear();$('logoutConfirmModal').classList.remove('show');$('profileModal').classList.remove('show');updateAccountUI();renderMissionProgress();$('onlineCount').textContent='0';$('onlinePlayers').innerHTML='<div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div>';$('liveFeed').innerHTML='<div class="feedEmpty">Войди, чтобы увидеть предметы игроков.</div>';notify('Ты вышел из аккаунта')});
 $('profileDelete').addEventListener('click',()=>{$('deleteAccountPassword').value='';$('deleteAccountHint').textContent='';$('deleteAccountModal').classList.add('show')});$('deleteAccountCancel').addEventListener('click',()=>$('deleteAccountModal').classList.remove('show'));
