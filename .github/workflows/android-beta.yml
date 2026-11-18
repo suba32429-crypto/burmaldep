@@ -25,7 +25,7 @@ jobs:
         run: |
           npm install --no-save @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
           mkdir -p www
-          printf '<!doctype html><html><head><meta charset="utf-8"></head><body>BURMALDEP</body></html>' > www/index.html
+          printf '%s\n' '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=https://burmaldep.vercel.app/"><title>BURMALDEP</title></head><body><script>location.replace("https://burmaldep.vercel.app/")</script><p>Открываем BURMALDEP…</p></body></html>' > www/index.html
           npx cap add android
           npx cap sync android
       - name: Apply BURMALDEP app icon
