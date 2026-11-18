@@ -780,6 +780,6 @@ $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.curre
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
 loadGameSettings();
 loadCurrentPlayer();
-setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else refreshSharedData();},60000);
+setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else if(currentPlayer)refreshSharedData();else loadGameSettings();},60000);
 setInterval(pingPresence,60000);
 </script></body></html>
