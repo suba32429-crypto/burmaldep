@@ -1,0 +1,19 @@
+{
+  "name": "BURMALDEP",
+  "short_name": "BURMALDEP",
+  "description": "Мемная игра Burmaldep — бета-тест",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090812",
+  "theme_color": "#090812",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
