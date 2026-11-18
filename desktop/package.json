@@ -1,0 +1,38 @@
+{
+  "name": "burmaldep-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BURMALDEP desktop beta app",
+  "main": "main.cjs",
+  "scripts": {
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.burmaldep.desktop",
+    "productName": "BURMALDEP",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs"
+    ],
+    "artifactName": "BURMALDEP-Setup.${ext}",
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
