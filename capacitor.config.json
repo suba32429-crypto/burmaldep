@@ -2,11 +2,6 @@
   "appId": "com.burmaldep.app",
   "appName": "BURMALDEP",
   "webDir": "www",
-  "server": {
-    "url": "https://burmaldep.vercel.app",
-    "cleartext": false,
-    "androidScheme": "https"
-  },
   "android": {
     "allowMixedContent": false
   }
