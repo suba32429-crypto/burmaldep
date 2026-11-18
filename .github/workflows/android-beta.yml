@@ -1,11 +1,19 @@
-name: Build Burmaldep Android beta APK
+name: Build BURMALDEP Android app
 on:
   workflow_dispatch:
   push:
     branches: [feature/profile-live-feed]
     paths:
+      - 'index.html'
+      - 'api/**'
+      - 'assets/**'
+      - '*.jpg'
+      - '*.b64'
+      - 'app-icon.svg'
+      - 'manifest.webmanifest'
+      - 'offline.html'
+      - 'sw.js'
       - 'capacitor.config.json'
-      - 'burmaldep-avatar.jpg.b64'
       - '.github/workflows/android-beta.yml'
 jobs:
   build:
@@ -21,11 +29,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Prepare Capacitor wrapper
+      - name: Prepare the complete local game
         run: |
           npm install --no-save @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
-          mkdir -p www
-          printf '%s\n' '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=https://burmaldep.vercel.app/"><title>BURMALDEP</title></head><body><script>location.replace("https://burmaldep.vercel.app/")</script><p>Открываем BURMALDEP…</p></body></html>' > www/index.html
+          mkdir -p www/assets
+          cp index.html www/index.html
+          cp ./*.jpg www/
+          cp burmaldep-avatar.jpg.b64 app-icon.svg manifest.webmanifest sw.js offline.html www/
+          cp -R assets/. www/assets/
+          test -s www/index.html
+          test -s www/burim.jpg
+          test -s www/manifest.webmanifest
           npx cap add android
           npx cap sync android
       - name: Apply BURMALDEP app icon
@@ -48,20 +62,20 @@ jobs:
           </adaptive-icon>
           EOF
           cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-      - name: Build debug APK
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - name: Build release APK
+        run: cd android && chmod +x gradlew && ./gradlew assembleRelease
       - uses: actions/upload-artifact@v4
         with:
-          name: Burmaldep-Android-Beta-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: BURMALDEP-Android-APK
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
-      - name: Publish beta APK release
+      - name: Publish Android APK release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: beta-latest
           name: BURMALDEP Android — БЕТА-ТЕСТ
           prerelease: true
           make_latest: false
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          files: android/app/build/outputs/apk/release/app-release-unsigned.apk
           fail_on_unmatched_files: true
           overwrite_files: true
