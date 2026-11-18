@@ -251,7 +251,34 @@
 .betaLaunchActions button:active{transform:translateY(0) scale(.98)}
 @media(max-width:760px){.betaLaunch{align-items:stretch;flex-direction:column}.betaLaunchActions{display:grid;grid-template-columns:1fr 1fr}.betaLaunchActions button{width:100%;min-height:42px}.app{padding-bottom:18px}}
 @media(max-width:420px){.betaLaunch{padding:10px}.betaLaunchInfo{align-items:flex-start}.betaLaunchInfo b{font-size:12px}.betaLaunchInfo small{font-size:10px}.betaPill{font-size:9px;padding:5px 7px}.betaLaunchActions{grid-template-columns:1fr}.caseHead{gap:7px}.caseCost{font-size:9px}}
-n</style></head><body>
+n
+.mobileBottomNav{display:none}
+@media(max-width:760px){
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.app{display:flex;flex-direction:column;gap:10px;padding:8px;min-height:0}
+.left{display:contents}.profile{display:none}.center{order:1;width:100%;gap:9px}
+.topnav{display:flex;flex-wrap:wrap;gap:7px;padding:8px;align-items:center}
+.topnav .tabs{display:none}.accountTools{display:flex;align-items:center;gap:6px;min-width:0}
+.accountName{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topBalance{margin-left:auto;padding:6px 7px;font-size:12px}
+.betaLaunch{margin:0;padding:10px}.betaLaunchActions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+.betaLaunchActions button{min-height:43px}.page{width:100%}
+.casePanel{min-height:0;padding:10px}.reelShell{min-height:220px}.popular{margin-top:9px}
+.onlinePanel,.leftFeedPanel{order:2;margin:0 8px}.balance{display:none}
+.right{order:3;display:flex;width:auto;margin:0 8px}
+.caseContentsList{max-height:260px;overflow:auto}
+.invHeader{align-items:flex-start}.invControls{width:100%}
+.invControls select,.invControls button{flex:1;min-width:0}
+.upgradeWrap{min-height:0}
+.mobileBottomNav{position:fixed;z-index:80;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:7px 7px calc(7px + env(safe-area-inset-bottom));background:rgba(13,9,23,.97);border-top:1px solid #56377b;box-shadow:0 -8px 28px #05030bc9;backdrop-filter:blur(16px)}
+.mobileBottomNav button{min-width:0;min-height:48px;padding:5px 2px;border:1px solid transparent;border-radius:10px;background:transparent;color:#a99bbd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:800 10px/1.1 Inter,Segoe UI,Arial,sans-serif;cursor:pointer}
+.mobileBottomNav button .mobileNavIcon{font-size:19px;line-height:1}
+.mobileBottomNav button.active{color:#fff;background:linear-gradient(145deg,#59228a,#32164f);border-color:#9252c4;box-shadow:0 0 15px #8b20ff35}
+.mobileBottomNav button:active{transform:scale(.96)}
+}
+@media(max-width:420px){.app{padding-left:6px;padding-right:6px}.topnav{padding:6px}.accountBtn{padding:8px 10px}.accountName{max-width:75px;font-size:11px}.topBalance{font-size:10px}.betaLaunchActions{grid-template-columns:1fr 1fr}.betaLaunchActions button{font-size:10px;padding:8px 5px}.casePanel{padding:8px}.reelShell{min-height:195px}.mobileBottomNav button{font-size:9px}}
+@media(min-width:761px){.mobileBottomNav{display:none!important}}
+</style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo"><img id="brandAvatar" alt="BURMALDEP"></span> Бурмалдеп</div></div><script>fetch("/burmaldep-avatar.jpg.b64").then(r=>{if(!r.ok)throw new Error("avatar");return r.text()}).then(b=>{const src="data:image/jpeg;base64,"+b.trim();["brandAvatar","profileAvatar"].forEach(id=>{const el=document.getElementById(id);if(el)el.src=src});let icon=document.querySelector("link[rel~=\"icon\"]");if(!icon){icon=document.createElement("link");icon.rel="icon";document.head.appendChild(icon)}icon.href=src}).catch(()=>{});</script>
 <div class="app">
 <aside class="left"><div class="profile"><img id="profileAvatar" alt="Аватар BURMALDEP"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
@@ -311,6 +338,13 @@ n</style></head><body>
 <div class="caseContentsPanel"><div class="caseContentsHead"><b>Содержимое кейса</b><span id="caseContentsCount">—</span></div><div class="caseContentsList" id="caseContentsList"></div></div>
 <div class="sideAction"><button id="goInventory">Открыть инвентарь</button></div></aside>
 </div>
+<nav class="mobileBottomNav" id="mobileBottomNav" aria-label="Основная навигация">
+<button type="button" class="active" data-mobile-page="cases"><span class="mobileNavIcon">⌂</span><span>Главная</span></button>
+<button type="button" data-mobile-action="case-menu"><span class="mobileNavIcon">▦</span><span>Кейсы</span></button>
+<button type="button" data-mobile-page="inventory"><span class="mobileNavIcon">▣</span><span>Инвентарь</span></button>
+<button type="button" data-mobile-page="upgrade"><span class="mobileNavIcon">↗</span><span>Апгрейд</span></button>
+<button type="button" data-mobile-action="profile"><span class="mobileNavIcon">●</span><span>Профиль</span></button>
+</nav>
 <div class="modalBack" id="resultModal"><div class="modal"><h2 id="resultTitle">Выпавшие предметы</h2><p id="resultText"></p><div id="resultItems" class="invGrid"></div><button id="resultClose">Продолжить</button></div></div><div class="toast" id="toast"></div>
 <div class="authModalBack" id="profileModal"><div class="authModal">
 <h2>Мой профиль</h2><p>Настройки аккаунта и время в игре.</p><div class="profileStats" id="profileStats">Время в игре: загружается…<br>Статус: онлайн</div>
@@ -524,8 +558,11 @@ $('upgradeCatalogSearch').addEventListener('input',()=>{upgradeCatalogLimit=48;r
 $('upgradeCatalogRarity').addEventListener('change',()=>{upgradeCatalogLimit=48;renderUpgradeCatalog()});
 $('upgradeCatalogMore').addEventListener('click',()=>{upgradeCatalogLimit+=48;renderUpgradeCatalog()});
 $('upgradeCatalogGrid').addEventListener('click',e=>{const card=e.target.closest('[data-catalog-item]');if(card)selectUpgradeCatalogItem(Number(card.dataset.catalogItem))});
-function switchPage(page){document.querySelectorAll('.tab[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));if(page==='inventory')renderInventoryPage();if(page==='cases'){updateBalance();renderCaseContents()}if(page==='upgrade'){renderUpgrade();renderUpgradeCatalog();publishUpgradeVisit()}}
+function switchPage(page){document.querySelectorAll('.tab[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));document.querySelectorAll('#mobileBottomNav [data-mobile-page]').forEach(b=>b.classList.toggle('active',b.dataset.mobilePage===page));if(page==='inventory')renderInventoryPage();if(page==='cases'){updateBalance();renderCaseContents()}if(page==='upgrade'){renderUpgrade();renderUpgradeCatalog();publishUpgradeVisit()}}
 document.querySelectorAll('.tab[data-page]').forEach(b=>b.addEventListener('click',()=>{if(!b.disabled){switchPage(b.dataset.page);if(b.dataset.page==='cases')openCaseMenu()}}));
+document.querySelectorAll('#mobileBottomNav [data-mobile-page]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.mobilePage)));
+document.querySelector('#mobileBottomNav [data-mobile-action=case-menu]')?.addEventListener('click',()=>{switchPage('cases');openCaseMenu();document.querySelectorAll('#mobileBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.mobileAction==='case-menu'))});
+document.querySelector('#mobileBottomNav [data-mobile-action=profile]')?.addEventListener('click',()=>{openProfile();document.querySelectorAll('#mobileBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.mobileAction==='profile'))});
 $('caseMenuClose').addEventListener('click',()=>$('caseMenuModal').classList.remove('show'));$('caseMenuModal').addEventListener('click',e=>{if(e.target.id==='caseMenuModal')e.currentTarget.classList.remove('show')});
 $('goInventory').addEventListener('click',()=>switchPage('inventory'));
 function drawDrop(caseId){
@@ -745,7 +782,7 @@ $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.curre
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
 $('androidDownloadBtn').addEventListener('click',async()=>{
  if(burmaldepInstallPrompt){burmaldepInstallPrompt.prompt();const choice=await burmaldepInstallPrompt.userChoice;burmaldepInstallPrompt=null;if(choice?.outcome==='accepted')notify('Установка BURMALDEP запущена');return;}
- notify('APK собирается. Когда сборка завершится, эта кнопка начнёт скачивать установочный файл.');
+ window.location.href='https://github.com/suba32429-crypto/burmaldep/releases/download/beta-latest/app-debug.apk';
 });
 $('pcDownloadBtn').addEventListener('click',()=>notify('ПК-приложение пока в разработке. Сейчас тестируем браузерную версию на компьютере.'));
 loadGameSettings();
