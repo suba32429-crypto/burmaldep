@@ -104,8 +104,8 @@ export default async function handler(req, res) {
         body: req.method === "GET" || req.method === "HEAD" ? undefined : JSON.stringify(req.body || {})
       });
       const payload = await upstream.json().catch(() => ({ error: "Не удалось прочитать ответ новой базы" }));
-      if (path !== "login" || ![401,404].includes(upstream.status)) return send(res, upstream.status, payload);
-      // If the account is not in Supabase yet, let the legacy Neon login path try it.
+      // Neon fallback is temporarily disabled. Supabase is the only active account database.
+      return send(res, upstream.status, payload);
     }
 
     await ensureSchema();
