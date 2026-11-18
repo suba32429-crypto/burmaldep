@@ -279,15 +279,60 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 }
 @media(max-width:420px){.app{padding-left:6px;padding-right:6px}.topnav{padding:6px}.accountBtn{padding:8px 10px}.accountName{max-width:75px;font-size:11px}.topBalance{font-size:10px}.casePanel{padding:8px}.reelShell{min-height:195px}.mobileBottomNav button{font-size:9px}}
 @media(min-width:761px){.mobileBottomNav{display:none!important}}
+
+/* Network mode selector */
+.networkModeOverlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(5,3,12,.88);backdrop-filter:blur(14px)}
+.networkModeOverlay.show{display:flex}
+.networkModeCard{width:min(520px,100%);max-height:min(88vh,760px);overflow:auto;padding:24px;border:1px solid #7040a3;border-radius:20px;background:linear-gradient(160deg,#1c1530,#100c1b);box-shadow:0 24px 80px #000b}
+.networkModeEyebrow{color:#c28cff;font-size:11px;font-weight:950;letter-spacing:1.5px;text-transform:uppercase}
+.networkModeCard h2{margin:7px 0 5px;font-size:26px;line-height:1.2}
+.networkModeIntro,.networkModeCard p{color:#c2b6d3}
+.networkModeIntro{margin:0 0 17px}
+.networkModeChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modeOption{min-height:145px;padding:16px;text-align:left;border:1px solid #4a3566;border-radius:14px;background:#171226;color:#f5f1ff;cursor:pointer;transition:transform .18s,border-color .18s,background .18s}
+.modeOption:hover{transform:translateY(-2px);border-color:#a85cff;background:#211633}
+.modeOption strong{display:block;margin:8px 0 5px;font-size:16px}
+.modeOption span{display:block;color:#b9accb;font-size:12px;line-height:1.45}
+.modeOption .modeEmoji{font-size:25px}
+.networkModeNotice{margin-top:15px;padding:15px;border:1px solid #4a3566;border-radius:14px;background:#120e1f}
+.networkModeNotice[hidden],.networkModeChoices[hidden]{display:none!important}
+.networkModeNotice h3{margin:0 0 8px;font-size:16px}
+.networkModeNotice p{margin:7px 0;font-size:13px;line-height:1.5}
+.modeActions{display:flex;gap:9px;justify-content:flex-end;margin-top:14px}
+.modePrimary,.modeSecondary{padding:10px 14px;border-radius:10px;font-weight:900;cursor:pointer}
+.modePrimary{border:1px solid #a95eff;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white}
+.modeSecondary{border:1px solid #514064;background:#1c1728;color:#e5d9f2}
+.networkModeFoot{margin:14px 0 0!important;text-align:center;font-size:11px;color:#9387a5!important}
+.modeBtn{padding:8px 10px;font-size:11px;white-space:nowrap}
+@media(max-width:480px){.networkModeCard{padding:18px;border-radius:16px}.networkModeCard h2{font-size:23px}.networkModeChoices{grid-template-columns:1fr}.modeOption{min-height:0;padding:13px}.modeActions{flex-direction:column-reverse}.modePrimary,.modeSecondary{width:100%}.modeBtn{padding:8px 9px;font-size:10px}}
 </style></head><body>
 <div class="windowbar"><div class="winbrand"><span class="winlogo"><img id="brandAvatar" alt="BURMALDEP"></span> Бурмалдеп</div></div><script>fetch("/burmaldep-avatar.jpg.b64").then(r=>{if(!r.ok)throw new Error("avatar");return r.text()}).then(b=>{const src="data:image/jpeg;base64,"+b.trim();["brandAvatar","profileAvatar"].forEach(id=>{const el=document.getElementById(id);if(el)el.src=src});let icon=document.querySelector("link[rel~=\"icon\"]");if(!icon){icon=document.createElement("link");icon.rel="icon";document.head.appendChild(icon)}icon.href=src}).catch(()=>{});</script>
+<div class="networkModeOverlay" id="networkModeOverlay" role="dialog" aria-modal="true" aria-labelledby="networkModeTitle">
+ <div class="networkModeCard">
+  <div class="networkModeEyebrow">BURMALDEP · РЕЖИМ ИГРЫ</div>
+  <h2 id="networkModeTitle">Как будем играть?</h2>
+  <p class="networkModeIntro">Выбери режим. Его можно поменять в верхней панели в любой момент.</p>
+  <div class="networkModeChoices" id="networkModeChoices">
+   <button class="modeOption" id="chooseOfflineMode" type="button"><span class="modeEmoji">📴</span><strong>Офлайн</strong><span>Играй локально. Прогресс этого режима сохраняется в браузере на этом устройстве. Аккаунт и общие функции недоступны.</span></button>
+   <button class="modeOption" id="chooseOnlineMode" type="button"><span class="modeEmoji">🌐</span><strong>Сетевой</strong><span>Войди в аккаунт, синхронизируй инвентарь и пользуйся общими функциями Burmaldep.</span></button>
+  </div>
+  <div class="networkModeNotice" id="networkModeNotice" hidden>
+   <h3>Перед подключением</h3>
+   <p>В сетевом режиме Burmaldep обменивается с сервером данными, необходимыми для аккаунта и игры: данными входа, профилем, инвентарём, игровым прогрессом и сетевой активностью.</p>
+   <p>Сейчас сетевые функции используют действующую инфраструктуру Burmaldep. Перенос на собственный сервер будет отдельным этапом после проверки копии данных.</p>
+   <p><strong>Важно:</strong> предоставление ресурсов твоего устройства для помощи сети пока не включено. Этот выбор не запускает скрытые фоновые задачи. Такая возможность появится только отдельно, добровольно и с понятными настройками лимитов и отключения.</p>
+   <div class="modeActions"><button class="modeSecondary" id="backToModeChoice" type="button">Назад</button><button class="modePrimary" id="confirmOnlineMode" type="button">Продолжить в сетевом режиме</button></div>
+  </div>
+  <p class="networkModeFoot">Режим можно переключить позже кнопкой «Сеть» в верхней панели.</p>
+ </div>
+</div>
 <div class="app">
 <aside class="left"><div class="profile"><img id="profileAvatar" alt="Аватар BURMALDEP"><div class="profileTitle"><b>БУРМАЛДЕП</b><small>Открывай кейсы — собирай легенды!</small></div></div>
 <div class="onlinePanel"><div class="onlineHead"><span>🟢 Сейчас в игре</span><span class="onlinePill">Онлайн: <b id="onlineCount">0</b></span></div><div class="onlinePlayers" id="onlinePlayers"><div class="onlineEmpty">Войди, чтобы увидеть игроков онлайн.</div></div></div>
 <div class="feedPanel leftFeedPanel"><div class="feedHead"><span>Предметы игроков</span><span class="feedLiveLabel">LIVE</span></div><div class="liveFeed" id="liveFeed"><div class="feedEmpty">Реальные предметы появятся здесь.</div></div></div>
 <div class="balance"><div class="balanceLabel">Бурмалдкойны · БК</div><div class="balanceRow"><span class="coin">🟡</span><div class="balanceValue" id="balance">820&nbsp;328</div></div><div class="displayNote">Виртуальный баланс · без денежных операций</div></div></aside>
 <main class="center">
-<header class="topnav"><nav class="tabs"><button class="tab active" data-page="cases" id="caseMenuOpen">Кейсы</button><button class="tab" data-page="inventory">2 · Инвентарь</button><button class="tab" data-page="upgrade">3 · Апгрейдер</button><button class="tab" data-page="author">Автор: Субхан Ганбаров</button></nav><div class="accountTools"><button class="accountBtn" id="authOpen">Войти</button><span class="accountName" id="accountName"></span><button class="avatarBtn" id="avatarOpen" title="Установить аватар">👤</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><div class="topBalance">🟡 <span id="topBalance">820&nbsp;328</span> БК</div></header>
+<header class="topnav"><nav class="tabs"><button class="tab active" data-page="cases" id="caseMenuOpen">Кейсы</button><button class="tab" data-page="inventory">2 · Инвентарь</button><button class="tab" data-page="upgrade">3 · Апгрейдер</button><button class="tab" data-page="author">Автор: Субхан Ганбаров</button></nav><div class="accountTools"><button class="accountBtn modeBtn" id="networkModeButton" type="button">Сеть: выбор</button><button class="accountBtn" id="authOpen">Войти</button><span class="accountName" id="accountName"></span><button class="avatarBtn" id="avatarOpen" title="Установить аватар">👤</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><div class="topBalance">🟡 <span id="topBalance">820&nbsp;328</span> БК</div></header>
 <section class="page active" id="page-cases"><div class="casePanel"><div class="caseHead"><div class="caseName"><div class="caseThumb"><img id="selectedCaseImage" alt="" src="./burim.jpg"></div><div><h1 id="selectedCaseName">Кейс: Золотой движ</h1><small id="caseProgress">В кейсе компактная коллекция · доступны редкие награды</small></div></div><div class="caseCost">Цена кейса<br><b id="caseCost">1&nbsp;513 БК</b></div></div>
 <div class="reelShell"><div class="pointer"></div><div class="reelLanes" id="reelLanes"><div class="lane"><div class="laneWindow"><div class="laneTrack"><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 2" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 2</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 3" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 3</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 4" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 4</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 5" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 5</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 6" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 6</strong></div></div></div></div><div class="lane"><div class="laneWindow"><div class="laneTrack"><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 2" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 2</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 3" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 3</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 4" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 4</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 5" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 5</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 6" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 6</strong></div></div></div></div><div class="lane"><div class="laneWindow"><div class="laneTrack"><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 2" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 2</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 3" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 3</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 4" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 4</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 5" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 5</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 6" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 6</strong></div></div></div></div><div class="lane"><div class="laneWindow"><div class="laneTrack"><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 2" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 2</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 3" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 3</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 4" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 4</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 5" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 5</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 6" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 6</strong></div></div></div></div><div class="lane"><div class="laneWindow"><div class="laneTrack"><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 2" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 2</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 3" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 3</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 4" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 4</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 5" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 5</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 6" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 6</strong></div></div></div></div><div class="lane"><div class="laneWindow"><div class="laneTrack"><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 2" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 2</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 3" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 3</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 4" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 4</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 5" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 5</strong></div><div class="reelCard " style="--rarity:#ff547c"><img src="./na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg" alt="Босс Меллстрой · образ 6" loading="lazy" onerror="this.onerror=null;this.src='https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg'"><strong style="color:#ff547c">Босс Меллстрой · образ 6</strong></div></div></div></div></div></div>
 <div class="reelActions"><div class="qtys"><button class="active" data-qty="1">×1</button><button data-qty="3">×3</button><button data-qty="5">×5</button><button data-qty="10">×10</button><button data-qty="25">×25</button><button data-qty="50">×50</button><button data-qty="100">×100</button><button type="button" class="speedToggle" id="fastCaseToggle" aria-pressed="false" title="Ускорить открытие кейсов">⚡</button></div><button class="openBtn" id="openCase">Открыть кейс · 1&nbsp;513 БК</button><div class="finePrint">Только виртуальные БК. Нет пополнения, вывода или обмена на реальные деньги. Босс Меллстрой — шанс 15% на каждое выпадение.</div></div></div>
@@ -604,6 +649,7 @@ $('selectedCaseName').textContent='Кейс: '+cases[state.caseId].name;$('selec
 /* Shared player accounts, avatars, online presence and feed */
 const API_BASE='https://burmaldep.vercel.app/api/';
 const AUTH_KEY='burmaldep-session-token';
+const NETWORK_MODE_KEY='burmaldep-network-mode';
 const UPGRADE_SYNC_KEY='burmaldep-upgrade-sync-pending';
 let currentPlayer=null;
 let feedSeen=new Set();
@@ -620,7 +666,9 @@ async function loadAccountInventory(){
  renderInventoryPeek();if($('page-inventory')?.classList.contains('active'))renderInventoryPage();renderUpgrade();
 }
 function apiToken(){return localStorage.getItem(AUTH_KEY)||''}
+function isNetworkModeOnline(){return localStorage.getItem(NETWORK_MODE_KEY)==='online'}
 async function apiRequest(route,method='GET',body=null){
+ if(!isNetworkModeOnline())throw new Error('Сетевой режим выключен. Переключись на него кнопкой «Сеть» в верхней панели.');
  const headers={'Content-Type':'application/json'};
  if(apiToken())headers.Authorization='Bearer '+apiToken();
  const controller=new AbortController();
@@ -643,12 +691,15 @@ function applyMultiItemUpgradeSetting(){
 }
 async function loadGameSettings(){}
 function updateAccountUI(){
- $('authOpen').textContent='Войти';$('authOpen').style.display=currentPlayer?'none':'';
+ const online=isNetworkModeOnline();
+ $('networkModeButton').textContent=online?'Сеть: онлайн':'Сеть: офлайн';
+ $('authOpen').textContent=online?'Войти':'Вход · онлайн';$('authOpen').disabled=!online;$('authOpen').style.opacity=online?'1':'.55';$('authOpen').style.display=currentPlayer?'none':'';
+ $('avatarOpen').disabled=!online||!currentPlayer;$('avatarOpen').style.opacity=online&&currentPlayer?'1':'.55';
  $('accountName').innerHTML=currentPlayer?esc(currentPlayer.username)+creatorBadge(currentPlayer.is_creator):'';
  $('avatarOpen').innerHTML=avatarMarkup(currentPlayer?.avatar_url);
  $('avatarOpen').title=currentPlayer?'Нажми, чтобы сменить аватар':'Войди, чтобы установить аватар';
 }
-function openAuth(){ $('authHint').textContent='';$('authModal').classList.add('show'); }
+function openAuth(){ if(!isNetworkModeOnline()){openNetworkModeChooser();return;} $('authHint').textContent='';$('authModal').classList.add('show'); }
 async function authenticate(mode){
  const username=$('authUsername').value.trim(),password=$('authPassword').value;
  $('authHint').textContent='Подключаемся…';
@@ -662,7 +713,7 @@ async function authenticate(mode){
  }catch(e){$('authHint').textContent=e.message;}
 }
 async function loadCurrentPlayer(){
- if(!apiToken()){updateAccountUI();return}
+ if(!isNetworkModeOnline()||!apiToken()){updateAccountUI();return}
  try{const data=await apiRequest('me');currentPlayer=data.user;applyMultiItemUpgradeSetting(data.user.multi_item_upgrade_enabled);updateAccountUI();renderMissionProgress();await loadAccountInventory();await refreshSharedData();await pingPresence();}
  catch(e){
   if(e.status===401){localStorage.removeItem(AUTH_KEY);currentPlayer=null;}
@@ -777,8 +828,48 @@ $('authRegister').addEventListener('click',()=>authenticate('register'));
 $('authClose').addEventListener('click',()=>$('authModal').classList.remove('show'));
 $('authModal').addEventListener('click',e=>{if(e.target.id==='authModal')e.currentTarget.classList.remove('show')});
 $('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')authenticate('login')});
+function openNetworkModeChooser(){
+ const overlay=$('networkModeOverlay');
+ $('networkModeChoices').hidden=false;
+ $('networkModeNotice').hidden=true;
+ overlay.classList.add('show');
+}
+function showOfflineNetworkState(){
+ currentPlayer=null;
+ if(inventorySyncTimer)clearTimeout(inventorySyncTimer);
+ $('onlineCount').textContent='—';
+ $('onlinePlayers').innerHTML='<div class="onlineEmpty">Игроки онлайн доступны в сетевом режиме.</div>';
+ $('liveFeed').innerHTML='<div class="feedEmpty">Общая лента доступна в сетевом режиме.</div>';
+ updateAccountUI();
+ renderMissionProgress();
+}
+function selectNetworkMode(mode){
+ localStorage.setItem(NETWORK_MODE_KEY,mode);
+ $('networkModeOverlay').classList.remove('show');
+ updateAccountUI();
+ if(mode==='online'){
+  $('onlinePlayers').innerHTML='<div class="onlineEmpty">Подключаемся к сети…</div>';
+  $('liveFeed').innerHTML='<div class="feedEmpty">Загружаем общую ленту…</div>';
+  loadCurrentPlayer();
+ }else{
+  showOfflineNetworkState();
+  notify('Офлайн-режим включён. Данные остаются на этом устройстве.');
+ }
+}
+$('chooseOfflineMode').addEventListener('click',()=>selectNetworkMode('offline'));
+$('chooseOnlineMode').addEventListener('click',()=>{$('networkModeChoices').hidden=true;$('networkModeNotice').hidden=false;});
+$('backToModeChoice').addEventListener('click',()=>{$('networkModeNotice').hidden=true;$('networkModeChoices').hidden=false;});
+$('confirmOnlineMode').addEventListener('click',()=>selectNetworkMode('online'));
+$('networkModeButton').addEventListener('click',openNetworkModeChooser);
 loadGameSettings();
-loadCurrentPlayer();
-setInterval(()=>{if(apiToken()&&!currentPlayer)loadCurrentPlayer();else if(currentPlayer)refreshSharedData();else loadGameSettings();},60000);
-setInterval(pingPresence,60000);
+const savedNetworkMode=localStorage.getItem(NETWORK_MODE_KEY);
+if(savedNetworkMode==='online'||savedNetworkMode==='offline'){
+ updateAccountUI();
+ if(savedNetworkMode==='online')loadCurrentPlayer();else showOfflineNetworkState();
+}else{
+ updateAccountUI();
+ openNetworkModeChooser();
+}
+setInterval(()=>{if(!isNetworkModeOnline())return;if(apiToken()&&!currentPlayer)loadCurrentPlayer();else if(currentPlayer)refreshSharedData();else loadGameSettings();},60000);
+setInterval(()=>{if(isNetworkModeOnline())pingPresence();},60000);
 </script></body></html>
