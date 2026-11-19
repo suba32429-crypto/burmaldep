@@ -613,7 +613,7 @@ $('allCases').addEventListener('click',openCaseMenu);
 $('selectedCaseName').textContent='Кейс: '+cases[state.caseId].name;$('selectedCaseImage').src=caseImage(cases[state.caseId]);$('caseProgress').textContent=cases[state.caseId].mythicOnly?'В кейсе ровно '+getCaseItems(state.caseId).length+' мифических предметов':'В кейсе '+getCaseItems(state.caseId).length+' доступных предметов';renderCaseStrip();renderCaseContents();renderLanes(true);renderInventoryPeek();updateBalance();
 
 /* Shared player accounts, avatars, online presence and feed */
-const API_BASE='https://burmaldep.vercel.app/api/';
+const API_BASE='/api/';
 const AUTH_KEY='burmaldep-session-token';
 const UPGRADE_SYNC_KEY='burmaldep-upgrade-sync-pending';
 let currentPlayer=null;
