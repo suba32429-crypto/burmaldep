@@ -469,7 +469,8 @@ for(const [name,value,asset] of [["Меллий",20000000,"melliy"],["Прост
 cases.push({id:12,name:'Я помылся — аура в тазике',photo:0,image:'assets/items/aura-v-tazike.webp',price:50000000,specialItems:premiumItems,mythicOnly:true});
 const missionRewardItem={id:items.length,caseId:-4,name:'Босс Бурмалды',rarity:'Мифический',color:rarityColors[5],image:megaBossPhoto,value:10000000,boss:true,missionReward:true};items.push(missionRewardItem);
 let state={balance:12450,caseId:0,inventory:[],favoriteSlots:[],openingCount:0};
-try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory))state={...state,...s}}catch(e){}
+let hasLegacySavedState=false;
+try{let s=JSON.parse(localStorage.getItem('burmaldep-live-state')||'null');if(s&&typeof s.balance==='number'&&Array.isArray(s.inventory)){state={...state,...s};hasLegacySavedState=true}}catch(e){}
 state.inventory=state.inventory.filter(id=>Number.isInteger(id)&&items[id]);
 state.favoriteSlots=Array.isArray(state.favoriteSlots)?state.inventory.map((_,i)=>!!state.favoriteSlots[i]):state.inventory.map(()=>false);
 if(!cases[state.caseId])state.caseId=0;
@@ -477,7 +478,7 @@ let qty=1,revealing=false,fastCaseOpen=false,fastUpgrade=false;let upgradeSource
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return Math.round(n).toLocaleString('ru-RU')}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
-function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){notify('Браузер не смог сохранить изменения')}if(currentPlayer)scheduleInventorySync()}
+function save(){try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){notify('Браузер не смог сохранить изменения')}if(currentPlayer){scheduleBalanceSync();scheduleInventorySync()}}
 function playBurmaldepShow(){return Promise.resolve()}
 function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),2400)}
 function updateBalance(){$('balance').textContent=money(state.balance);$('topBalance').textContent=money(state.balance);$('caseCost').textContent=money(cases[state.caseId].price)+' БК';updateOpenButton()}
@@ -616,12 +617,52 @@ const API_BASE='https://burmaldep.vercel.app/api/';
 const AUTH_KEY='burmaldep-session-token';
 const UPGRADE_SYNC_KEY='burmaldep-upgrade-sync-pending';
 let currentPlayer=null;
+let serverBalance=null,queuedBalance=null,balanceSyncChain=Promise.resolve();
 let feedSeen=new Set();
 let inventorySyncTimer=null;
 function inventoryImageUrl(item){const url=item.image||(item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo]);return typeof url==='string'&&/^https:\/\//i.test(url)?url:null}
 function inventoryPayload(){return state.inventory.slice(0,200).map((id,index)=>{const item=items[id];return item?{item_id:item.id,item_name:item.name,item_image:inventoryImageUrl(item),item_value:item.value,rarity:item.rarity,is_favorite:!!state.favoriteSlots[index]}:null}).filter(Boolean)}
 function scheduleInventorySync(){if(!currentPlayer)return;clearTimeout(inventorySyncTimer);inventorySyncTimer=setTimeout(()=>syncAccountInventory().catch(e=>console.warn('Не удалось сохранить инвентарь:',e.message)),350)}
 async function syncAccountInventory(){if(!currentPlayer)return;await apiRequest('inventory','POST',{items:inventoryPayload()});}
+function applyServerBalance(value){
+ const balance=Number(value);
+ if(!Number.isSafeInteger(balance)||balance<0)return false;
+ serverBalance=balance;queuedBalance=balance;state.balance=balance;
+ try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){}
+ updateBalance();return true;
+}
+async function loadAccountBalance(isNewAccount=false){
+ const data=await apiRequest('balance');
+ if(data.balance!==null&&data.balance!==undefined){if(!applyServerBalance(data.balance))throw new Error('Сервер вернул некорректный баланс');return}
+ if(hasLegacySavedState||isNewAccount){
+  const initial=Math.max(0,Math.min(1000000000000,Math.trunc(Number(state.balance)||0)));
+  const initialized=await apiRequest('balance','POST',{action:'initialize',balance:initial});
+  if(!applyServerBalance(initialized.balance))throw new Error('Не удалось подтвердить перенос БК');
+  hasLegacySavedState=false;return;
+ }
+ serverBalance=null;queuedBalance=null;
+ notify('Баланс ещё не перенесён. Старые БК не изменены.');
+}
+function scheduleBalanceSync(){
+ if(!currentPlayer||serverBalance===null)return;
+ const target=Math.max(0,Math.min(1000000000000,Math.trunc(Number(state.balance)||0)));
+ const base=queuedBalance===null?serverBalance:queuedBalance,delta=target-base;
+ if(!delta)return;
+ queuedBalance=target;
+ balanceSyncChain=balanceSyncChain.then(async()=>{
+  if(serverBalance===null)return;
+  const result=await apiRequest('balance','POST',{action:'change',delta});
+  const confirmed=Number(result.balance);
+  if(!Number.isSafeInteger(confirmed)||confirmed<0)throw new Error('Сервер не подтвердил новый баланс');
+  serverBalance=confirmed;
+  if(queuedBalance===target){queuedBalance=confirmed;state.balance=confirmed;try{localStorage.setItem('burmaldep-live-state',JSON.stringify(state))}catch(e){}updateBalance()}
+ }).catch(async error=>{
+  serverBalance=null;queuedBalance=null;
+  console.warn('Не удалось сохранить баланс на сервере:',error.message);
+  notify('Не удалось сохранить БК на сервере. Проверь подключение.');
+  try{const latest=await apiRequest('balance');if(latest.balance!==null)applyServerBalance(latest.balance)}catch(e){}
+ });
+}
 async function loadAccountInventory(){
  if(localStorage.getItem(UPGRADE_SYNC_KEY)==='1'){await syncAccountInventory();localStorage.removeItem(UPGRADE_SYNC_KEY);renderInventoryPeek();if($('page-inventory')?.classList.contains('active'))renderInventoryPage();return}
  const data=await apiRequest('inventory'),saved=Array.isArray(data.items)?data.items:[];
@@ -668,13 +709,14 @@ async function authenticate(mode){
   localStorage.setItem(AUTH_KEY,data.token);currentPlayer=data.user;updateAccountUI();await syncOptimizedMode();renderMissionProgress();
   $('authModal').classList.remove('show');$('authPassword').value='';
   notify(mode==='register'?'Аккаунт создан!':'Ты вошёл в аккаунт');
+  await loadAccountBalance(mode==='register');
   if(mode==='register')await syncAccountInventory();else await loadAccountInventory();
   await refreshSharedData();
  }catch(e){$('authHint').textContent=e.message;}
 }
 async function loadCurrentPlayer(){
  if(!apiToken()){updateAccountUI();return}
- try{const data=await apiRequest('me');currentPlayer=data.user;applyMultiItemUpgradeSetting(data.user.multi_item_upgrade_enabled);updateAccountUI();await syncOptimizedMode();renderMissionProgress();await loadAccountInventory();await refreshSharedData();await pingPresence();}
+ try{const data=await apiRequest('me');currentPlayer=data.user;applyMultiItemUpgradeSetting(data.user.multi_item_upgrade_enabled);updateAccountUI();await syncOptimizedMode();renderMissionProgress();await loadAccountBalance(false);await loadAccountInventory();await refreshSharedData();await pingPresence();}
  catch(e){
   if(e.status===401){localStorage.removeItem(AUTH_KEY);currentPlayer=null;}
   updateAccountUI();
