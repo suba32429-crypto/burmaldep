@@ -26,11 +26,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Prepare Capacitor wrapper
+      - name: Prepare the complete local game
         run: |
           npm install --no-save @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
-          mkdir -p www
-          printf '<!doctype html><html><head><meta charset="utf-8"></head><body>BURMALDEP</body></html>' > www/index.html
+          mkdir -p www/assets
+          cp index.html www/index.html
+          cp ./*.jpg www/
+          cp burmaldep-avatar.jpg.b64 app-icon.svg manifest.webmanifest sw.js offline.html www/
+          cp -R assets/. www/assets/
+          test -s www/index.html
+          test -s www/burim.jpg
+          test -s www/manifest.webmanifest
           npx cap add android
           npx cap sync android
       - name: Apply BURMALDEP app icon
