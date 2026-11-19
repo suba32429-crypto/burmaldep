@@ -2,10 +2,15 @@ name: Build Burmaldep Android beta APK
 on:
   workflow_dispatch:
   push:
-    branches: [feature/profile-live-feed]
+    branches: [mobile-layout-preview]
     paths:
+      - 'index.html'
       - 'capacitor.config.json'
       - 'burmaldep-avatar.jpg.b64'
+      - 'assets/**'
+      - 'manifest.webmanifest'
+      - 'sw.js'
+      - 'app-icon.svg'
       - '.github/workflows/android-beta.yml'
 jobs:
   build:
