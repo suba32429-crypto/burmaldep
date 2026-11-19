@@ -2,11 +2,6 @@
   "appId": "com.burmaldep.app",
   "appName": "BURMALDEP",
   "webDir": "www",
-  "server": {
-    "url": "https://burmaldep-git-mobile-layout-preview-suba32429-7845.vercel.app",
-    "cleartext": false,
-    "androidScheme": "https"
-  },
   "android": {
     "allowMixedContent": false
   }
