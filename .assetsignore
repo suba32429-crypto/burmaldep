@@ -1,0 +1,14 @@
+# Keep source code and deployment configuration out of the public asset bundle.
+worker.js
+wrangler.jsonc
+.assetsignore
+package.json
+README.md
+capacitor.config.json
+burmaldep-avatar.jpg.b64
+api/
+supabase/
+.github/
+desktop/
+node_modules/
+.git/
