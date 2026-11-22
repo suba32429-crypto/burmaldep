@@ -358,6 +358,41 @@ button:not(:disabled):active{transform:scale(.97)}
 ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#3b2a55;border-radius:9px}::-webkit-scrollbar-thumb:hover{background:#5b3f86}::-webkit-scrollbar-track{background:transparent}
 input:focus,select:focus{border-color:#a678e6!important;box-shadow:0 0 0 3px #8b20ff33}
 
+
+/* Mobile app layout: keep the real site pages/assets, remove desktop sidebars. */
+@media(max-width:760px){
+  html,body{min-height:100%;width:100%;overflow-x:hidden}
+  body{margin:0;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  .app{width:100%;max-width:none;min-height:100dvh;box-sizing:border-box;padding:8px 8px calc(84px + env(safe-area-inset-bottom));gap:0}
+  .left{display:none!important}
+  .center{display:flex;order:0;width:100%;max-width:none;min-width:0;margin:0;gap:10px}
+  .topnav{position:sticky;top:0;z-index:40;width:100%;box-sizing:border-box;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;padding:9px 10px;border:1px solid #392653;border-radius:14px;background:rgba(13,9,23,.96);box-shadow:0 8px 24px #0007}
+  .topnav .tabs{display:none!important}
+  .accountTools{display:flex;align-items:center;gap:6px;min-width:0}
+  .accountTools #authOpen{padding:8px 10px;font-size:11px}
+  .accountTools #settingsOpen,.accountTools #avatarOpen{padding:7px 9px}
+  .topBalance{margin-left:auto;white-space:nowrap;padding:7px 10px!important;font-size:12px!important}
+  .page{width:100%;min-width:0}
+  .page.active{display:block}
+  .casePanel,.upgradeWrap,.pagePanel{width:100%;box-sizing:border-box;border-radius:16px!important}
+  .casePanel{min-height:0;padding:12px}
+  .reelShell{min-height:clamp(190px,32vh,280px)}
+  .popular{margin-top:12px}
+  .onlinePanel,.leftFeedPanel,.right{display:none!important}
+  .mobileBottomNav{position:fixed;z-index:200;left:0;right:0;bottom:0;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(13,9,23,.98);border-top:1px solid #65408c;box-shadow:0 -8px 28px #05030bcc;backdrop-filter:blur(18px)}
+  .mobileBottomNav button{min-width:0;min-height:54px;padding:5px 2px;border:1px solid transparent;border-radius:11px;background:transparent;color:#b9a8d1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:800 10px/1.1 Inter,Segoe UI,Arial,sans-serif}
+  .mobileBottomNav button .mobileNavIcon{font-size:20px;line-height:1}
+  .mobileBottomNav button.active{color:#fff;background:linear-gradient(145deg,#7620ce,#35145b);border-color:#a45be4;box-shadow:0 0 18px #8b20ff55}
+}
+@media(max-width:420px){
+  .app{padding-left:5px;padding-right:5px}
+  .topnav{padding:7px}
+  .topBalance{font-size:10px!important;padding:6px 8px!important}
+  .casePanel{padding:9px}
+  .reelShell{min-height:190px}
+  .mobileBottomNav button{font-size:9px}
+}
+
 </style><style>
 .pagePanel{background:linear-gradient(145deg,#171326,#100d1a);border:1px solid #392957;border-radius:14px;padding:14px;min-width:0}
 .pageHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:11px;border-bottom:1px solid #302342}
@@ -648,8 +683,8 @@ body .reelShell:has(.reelLanes.multi) .pointer{display:none}
 <nav class="mobileBottomNav" id="mobileBottomNav" aria-label="Основная навигация">
 <button type="button" class="active" data-mobile-page="cases"><span class="mobileNavIcon">⌂</span><span>Главная</span></button>
 <button type="button" data-mobile-action="case-menu"><span class="mobileNavIcon">▦</span><span>Кейсы</span></button>
+<button type="button" data-mobile-page="upgrade"><span class="mobileNavIcon">↗</span><span>Апгрейдер</span></button>
 <button type="button" data-mobile-page="inventory"><span class="mobileNavIcon">▣</span><span>Инвентарь</span></button>
-<button type="button" data-mobile-page="upgrade"><span class="mobileNavIcon">↗</span><span>Апгрейд</span></button>
 <button type="button" data-mobile-action="profile"><span class="mobileNavIcon">●</span><span>Профиль</span></button>
 </nav>
 <div class="modalBack" id="settingsModal"><div class="modal"><h2>Анимации</h2><div class="setRow"><span>Быстрое открытие кейсов по умолчанию</span><input type="checkbox" id="setFastCase"></div><div class="setRow"><span>Быстрый апгрейд по умолчанию</span><input type="checkbox" id="setFastUp"></div><div style="margin-top:14px;text-align:right"><button id="settingsClose">Готово</button></div></div></div>
