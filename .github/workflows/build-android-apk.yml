@@ -20,6 +20,7 @@ jobs:
           mkdir -p android/app/src/main/assets
           cp offline.html android/app/src/main/assets/index.html
           cp ./*.jpg android/app/src/main/assets/
+          cp -R assets android/app/src/main/assets/assets
           cp app-icon.svg manifest.webmanifest android/app/src/main/assets/
           python3 - <<'PY'
           from pathlib import Path
