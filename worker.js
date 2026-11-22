@@ -2,7 +2,7 @@ const SUPABASE_FUNCTION = "https://qgsugmiaryvqixsypfgw.supabase.co/functions/v1
 const API_ROUTES = new Set([
   "register", "login", "me", "player-profile", "presence", "feed",
   "optimized-mode", "inventory", "balance", "activity-view", "activity",
-  "password", "username", "avatar", "delete-account"
+  "password", "username", "avatar", "delete-account", "leaderboard"
 ]);
 
 function json(data, status = 200, origin = "*") {
