@@ -18,7 +18,7 @@
     p{max-width:470px;margin:0 auto;color:var(--muted)}
     .note{margin-top:24px;padding:15px 17px;border:1px solid #342747;border-radius:13px;background:#100d19;color:#d9cdea;font-size:13px}
     button{margin-top:25px;padding:12px 20px;border:1px solid #b36aff;border-radius:11px;background:linear-gradient(100deg,#9227ee,#6415cb);color:white;font-weight:850;cursor:pointer}
-    button:hover{filter:brightness(1.12)}
+    .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:25px}\n    .actions button{margin-top:0}\n    .offline{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border:1px solid #b36aff;border-radius:11px;background:linear-gradient(100deg,#9227ee,#6415cb);color:white;font-weight:850;text-decoration:none}\n    .offline:hover{filter:brightness(1.12)}\n    button:hover{filter:brightness(1.12)}
     .foot{margin-top:26px;color:#766b87;font-size:11px;letter-spacing:.5px}
   </style>
 </head>
@@ -30,7 +30,7 @@
     <h1>Скоро вернёмся</h1>
     <p>Мы временно приостановили вход, регистрацию и игровые функции, пока восстанавливаем работу серверной инфраструктуры.</p>
     <div class="note">Данные аккаунтов, балансы и предметы не затрагиваются. После восстановления сервиса доступ к игре вернётся.</div>
-    <button type="button" onclick="location.reload()">Проверить снова</button>
+    <div class="actions"><a class="offline" href="/offline.html">Играть офлайн</a><button type="button" onclick="location.reload()">Проверить снова</button></div>
     <div class="foot">Спасибо за терпение · BURMALDEP</div>
   </main>
 </body>
