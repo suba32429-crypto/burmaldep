@@ -95,7 +95,7 @@ export default async function handler(req, res) {
 
     const authHeader = String(req.headers.authorization || "");
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    const supabaseRoutes = new Set(["register","login","me","player-profile","presence","feed","optimized-mode","inventory","balance","activity-view","activity","password","username","avatar","delete-account"]);
+    const supabaseRoutes = new Set(["register","login","me","player-profile","presence","feed","optimized-mode","inventory","balance","activity-view","activity","password","username","avatar","delete-account","leaderboard"]);
     if (supabaseRoutes.has(path)) {
       const target = "https://qgsugmiaryvqixsypfgw.supabase.co/functions/v1/burmaldep-api/" + path + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "");
       const upstream = await fetch(target, {
