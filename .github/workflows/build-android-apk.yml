@@ -15,11 +15,48 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Package the complete offline game and local media
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp offline.html android/app/src/main/assets/index.html
+          cp ./*.jpg android/app/src/main/assets/
+          cp app-icon.svg manifest.webmanifest android/app/src/main/assets/
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path("android/app/src/main/assets/index.html")
+          html = page.read_text(encoding="utf-8")
+          replacements = {
+              'https://images.news.ru/photo/23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg': './23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg',
+              'https://halvamedia.scb.ru/82102/conversions/burmalda-mem.webp': './burim.jpg',
+              'https://uznayvse.ru/images/content/2024/8/28/mellstroy-andrey-burim_82.jpg': './mellstroy-andrey-burim_82.jpg',
+              'https://img.championat.com/c/900x900/news/big/u/s/na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg': './na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg',
+              'https://www.techcult.ru/content/2025/14855/burim.jpg': './burim.jpg',
+              'https://cdn-blog.gdemoideti.ru/2024/11/mellstroy-12.jpg': './mellstroy-12.jpg',
+              'https://s8.tvp.pl/images2/8/3/6/uid_836f747459174768924fcc5aa9dc025f_width_1280_play_0_pos_0_gs_0_height_720.jpg': './uid_836f747459174768924fcc5aa9dc025f_width_1280_play_0_pos_0_gs_0_height_720.jpg',
+              'https://celebbio.org/wp-content/uploads/2024/03/mellstroy-foto-4.jpg': './mellstroy-foto-4.jpg',
+              'https://aif-s3.aif.ru/images/036/445/2b1aeaa2b7cb69d4995d3129f3708a57.jpg': './2b1aeaa2b7cb69d4995d3129f3708a57.jpg',
+              'https://cdni-vm.servicecdn.ru/2024.02/original/720_65ce2e2c82682c71d4024cb5.jpg': './720_65ce2e2c82682c71d4024cb5.jpg',
+              'https://pbs.twimg.com/media/GJPCbp6XkAAPl-O.jpg': './burim.jpg',
+              'https://multi-admin.ru/mediabank_blog/11/278960/6d76c06d96d8daeabf0f23951608e0fb11zon-cropped-4-.jpeg': './mellstroy-12.jpg',
+              'https://s6.tvp.pl/images2/6/9/7/uid_69761111dd8d4c91a0f3027f295d2312_width_900_play_0_pos_0_gs_0_height_506.jpg': './uid_836f747459174768924fcc5aa9dc025f_width_1280_play_0_pos_0_gs_0_height_720.jpg',
+              'https://steepmen.ru/wp-content/uploads/2020/10/Screenshot_2-1-768x568.png': './2b1aeaa2b7cb69d4995d3129f3708a57.jpg',
+              'https://s.cq.ru/img/f/e/2024/4/19/240082.jpg': './mellstroy-andrey-burim_82.jpg',
+              'https://news.store.rambler.ru/img/6fcf1cf3df0b9992acad47128767e877?img-1-resize=height%3A400%2Cfit%3Amax&img-2-filter=sharpen&img-format=auto': './23a6adb4-0e47-11f0-8fdf-ac1f6bad3ff4_1200.jpg',
+              'https://static.mk.ru/upload/entities/2024/02/13/16/photoreportsImages/detailPicture/39/ee/f1/79/0c0273ba579acde94e394bed7d03bdb1.jpg': './na-izbivshego-devushku-vo-vremja-transljacii-strimera-mellstroy-zaveli-ugolovnoe-delo_1603442771703209519.jpg',
+              'https://images.news.ru/photo/c635fed8-ef56-11ee-8786-02420a0000c9_780.jpg': './720_65ce2e2c82682c71d4024cb5.jpg',
+              'https://funny.klev.club/smeh/uploads/posts/2024-04/funny-klev-club-dar4-p-smeshnie-kartinki-melstroi-27.jpg': './mellstroy-foto-4.jpg',
+          }
+          for remote, local in replacements.items():
+              html = html.replace(remote, local)
+          html = html.replace('href="/manifest.webmanifest"', 'href="./manifest.webmanifest"')
+          html = html.replace('href="/app-icon.svg"', 'href="./app-icon.svg"')
+          page.write_text(html, encoding="utf-8")
+          PY
       - name: Build debug APK
         working-directory: android
         run: gradle assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: Burmaldep-APK
+          name: Burmaldep-APK-Full-Offline
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
