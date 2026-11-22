@@ -39,8 +39,11 @@ export default {
       }
 
       if (url.pathname === "/api" || url.pathname === "/api/") {
-        return json({ service: "Burmaldep API", status: "online", database: "Supabase" }, 200, origin);
+        return json({ service: "Burmaldep API", status: "maintenance", message: "Burmaldep временно на технических работах." }, 503, origin);
       }
+
+      // Temporary maintenance mode: block account and game API calls without touching stored data.
+      return json({ error: "Burmaldep временно на технических работах. Данные аккаунтов сохранены.", maintenance: true }, 503, origin);
 
       const route = url.pathname.slice("/api/".length).replace(/\/+$/, "");
       if (!API_ROUTES.has(route)) {
