@@ -2,8 +2,6 @@ name: Build Burmaldep APK
 on:
   push:
     branches: [feature/server-balance-storage]
-    paths:
-      - 'android/**'
   workflow_dispatch:
 permissions:
   contents: read
