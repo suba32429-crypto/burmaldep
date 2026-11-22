@@ -64,6 +64,21 @@ Deno.serve(async (req) => {
     const user=await getUser(req);
     if(!user) return json({error:"Сначала войди в аккаунт"},401);
     if(path==="me" && req.method==="GET") return json({user:{id:user.id,username:user.username,avatar_url:user.avatar_url,total_play_seconds:Number(user.total_play_seconds)||0,monthly_play_seconds:Number(user.monthly_play_seconds)||0,monthly_mission_rewarded:!!user.monthly_mission_rewarded,is_creator:!!user.is_creator,share_upgrade_activity:user.share_upgrade_activity!==false,optimized_mode:!!user.optimized_mode,balance:user.balance===null?null:Number(user.balance),monthly_mission_closed:Date.now()>=Date.UTC(2026,11,19,0,0,0)}});
+    if(path==="leaderboard" && req.method==="GET"){
+      const {data:players,error}=await supabase.from("players")
+        .select("id,username,is_creator,balance")
+        .not("balance","is",null)
+        .order("balance",{ascending:false})
+        .order("username",{ascending:true})
+        .limit(50);
+      if(error) throw error;
+      return json({players:(players||[]).map((p:any)=>({
+        id:p.id,
+        username:p.username,
+        is_creator:!!p.is_creator,
+        balance:Number(p.balance)||0
+      }))});
+    }
     if(path==="balance" && req.method==="GET") return json({balance:user.balance===null?null:Number(user.balance)});
     if(path==="balance" && req.method==="POST"){
       if(body.action==="initialize"){
