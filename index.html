@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#090812">
   <title>BURMALDEP — технические работы</title>
   <style>
-    :root{color-scheme:dark;--bg:#090812;--panel:#151123;--line:#392653;--purple:#a64cff;--text:#f6f0ff;--muted:#b2a6c5}
+    :root{color-scheme:dark;--bg:#090812;--line:#392653;--text:#f6f0ff;--muted:#b2a6c5}
     *{box-sizing:border-box}
     body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0%,#281344 0%,#100b1c 42%,#08070e 100%);color:var(--text);font:15px/1.6 Inter,Segoe UI,Arial,sans-serif}
     .card{width:min(620px,100%);padding:clamp(26px,6vw,48px);border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#191329ee,#100d19f5);box-shadow:0 24px 90px #0008;text-align:center}
@@ -17,12 +17,8 @@
     h1{margin:0 0 13px;font-size:clamp(27px,6vw,38px);line-height:1.15;letter-spacing:-1px}
     p{max-width:470px;margin:0 auto;color:var(--muted)}
     .note{margin-top:24px;padding:15px 17px;border:1px solid #342747;border-radius:13px;background:#100d19;color:#d9cdea;font-size:13px}
-    button{margin-top:25px;padding:12px 20px;border:1px solid #b36aff;border-radius:11px;background:linear-gradient(100deg,#9227ee,#6415cb);color:white;font-weight:850;cursor:pointer}
-    .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:25px}
-    .actions button{margin-top:0}
-    .offline{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border:1px solid #b36aff;border-radius:11px;background:linear-gradient(100deg,#9227ee,#6415cb);color:white;font-weight:850;text-decoration:none}
-    .offline:hover{filter:brightness(1.12)}
-    button:hover{filter:brightness(1.12)}
+    .offline{display:inline-flex;align-items:center;justify-content:center;margin-top:25px;padding:13px 24px;border:1px solid #b36aff;border-radius:11px;background:linear-gradient(100deg,#9227ee,#6415cb);color:white;font-weight:850;text-decoration:none;box-shadow:0 7px 24px #7c20c744;transition:filter .15s,transform .15s}
+    .offline:hover{filter:brightness(1.12);transform:translateY(-1px)}
     .foot{margin-top:26px;color:#766b87;font-size:11px;letter-spacing:.5px}
   </style>
 </head>
@@ -32,9 +28,9 @@
     <div class="brand">BURMALDEP</div>
     <div class="status"><span class="dot"></span> Технические работы</div>
     <h1>Скоро вернёмся</h1>
-    <p>Мы временно приостановили вход, регистрацию и игровые функции, пока восстанавливаем работу серверной инфраструктуры.</p>
-    <div class="note">Данные аккаунтов, балансы и предметы не затрагиваются. После восстановления сервиса доступ к игре вернётся.</div>
-    <div class="actions"><a class="offline" href="/offline.html">Играть офлайн</a><button type="button" onclick="location.reload()">Проверить снова</button></div>
+    <p>Мы временно приостановили вход, регистрацию и сетевые игровые функции, пока восстанавливаем работу серверной инфраструктуры.</p>
+    <div class="note">Данные аккаунтов, балансы и предметы не затрагиваются. Пока сервер недоступен, можно продолжить игру в офлайн-режиме. Его прогресс хранится только в этом браузере и не синхронизируется с аккаунтом.</div>
+    <a class="offline" href="/offline.html">Играть офлайн</a>
     <div class="foot">Спасибо за терпение · BURMALDEP</div>
   </main>
 </body>
