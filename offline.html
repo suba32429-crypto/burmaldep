@@ -142,7 +142,7 @@
 .authHint{font-size:11px;color:#c8b4dd;min-height:16px;margin-top:8px}
 .profileAvatarPreview{width:76px;height:76px;border-radius:50%;object-fit:cover;display:block;margin:8px auto 12px;border:2px solid #8452ae;background:#30203f}.profileModalActions{display:flex;gap:8px;margin-top:10px}.profileModalActions button{flex:1;padding:11px;border:0;border-radius:8px;background:linear-gradient(100deg,#8d23ef,#5b17b6);color:white;font-weight:900;cursor:pointer}
 .playerViewModal{width:min(620px,calc(100vw - 32px));max-height:85vh;overflow:auto;min-width:0}
-.playerViewModal #playerViewInventory{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:start};max-height:54vh;overflow-y:auto;overscroll-behavior:contain;padding:0 7px 8px 0;scrollbar-gutter:stable
+.playerViewModal #playerViewInventory{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:start;max-height:54vh;overflow-y:auto;overscroll-behavior:contain;padding:0 7px 8px 0;scrollbar-gutter:stable}
 .playerViewModal #playerViewInventory .invCard{min-width:0;padding:9px;display:flex;flex-direction:column;gap:6px}
 .playerViewModal #playerViewInventory .invCard img{display:block;width:100%;height:112px;object-fit:contain;border-radius:7px;background:#21172d}
 .playerViewModal #playerViewInventory .invCard b{overflow-wrap:anywhere;min-height:0}
@@ -868,7 +868,13 @@ function updateOpenButton(){$('openCase').textContent='Открыть кейс �
 function makeImg(src,alt='',fallbackSrc=fallback){return '<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" onerror="this.onerror=null;this.src=&quot;'+esc(fallbackSrc)+'&quot;">'}
 function itemImg(item){const url=item.image?item.image:item.placeholder?fallback:item.megaBoss?megaBossPhoto:item.bonus?bonusPhotos[item.photo]:photos[item.photo];return makeImg(url,item.name,item.megaBoss?megaBossPhoto:fallback)}
 function caseImage(c){return c?.image||photos[c?.photo]||photos[0]}
-function getDropPool(caseId){const c=cases[caseId];if(!c)return [];if(c.mythicOnly)return Array.isArray(c.specialItems)?c.specialItems.filter(x=>x.specialCaseOnly&&x.caseId===-2):[];return items.filter(x=>!x.specialCaseOnly&&!x.missionReward&&(x.caseId===caseId||x.caseId===-1));}
+function getDropPool(caseId){
+ const c=cases[caseId];if(!c)return [];
+ // The 50,000,000 БК mythic case is intentionally preserved unchanged.
+ if(c.mythicOnly)return Array.isArray(c.specialItems)?c.specialItems.filter(x=>x.specialCaseOnly&&x.caseId===-2):[];
+ const minValue=c.price*2/3;
+ return items.filter(x=>!x.specialCaseOnly&&!x.missionReward&&(x.caseId===caseId||x.caseId===-1)&&x.value>=minValue);
+}
 function itemCard(item,inventoryIndex){const fav=!!state.favoriteSlots[inventoryIndex];return '<article class="invCard '+(fav?'isFavorite':'')+'" style="--rarity:'+item.color+'"><div class="bigImg">'+itemImg(item)+'<button class="invStar '+(fav?'active':'')+'" type="button" aria-label="'+(fav?'Снять защиту':'Защитить предмет')+'" onclick="toggleFavorite('+inventoryIndex+')">'+(fav?'★':'☆')+'</button></div><div class="details"><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+(fav?' · Защищён':'')+'</small><strong>'+money(item.value)+' БК</strong>'+(fav?'<button class="protectedTag" type="button" disabled>Нельзя продать или апгрейдить</button>':'<button onclick="sellOne('+inventoryIndex+')">Продать за '+money(item.value)+' БК</button>')+'</div></article>'}
 function reelCard(item,selected=false){return '<div class="reelCard '+(selected?'selected':'')+'" style="--rarity:'+item.color+'">'+itemImg(item)+'<strong style="color:'+item.color+'">'+esc(item.name)+'</strong></div>'}
 function getCaseItems(caseId){return getDropPool(caseId)}
@@ -877,7 +883,24 @@ function renderCaseStrip(){
  const root=$('caseStrip');root.innerHTML=cases.map(c=>'<button class="caseTile '+(c.id===state.caseId?'active':'')+'" data-case="'+c.id+'"><div class="tileImg">'+makeImg(caseImage(c),c.name)+'</div><b>'+esc(c.name)+'</b><small>'+money(c.price)+' БК</small></button>').join('');
  root.querySelectorAll('[data-case]').forEach(b=>b.addEventListener('click',()=>selectCase(Number(b.dataset.case))));
 }
-function renderCaseContents(){const root=$('caseContentsList');if(!root)return;const pool=getDropPool(state.caseId);$('caseContentsCount').textContent=pool.length+' предметов';root.innerHTML=pool.map(item=>'<div class="caseContentRow" style="--rarity:'+item.color+'"><span class="caseContentThumb">'+itemImg(item)+'</span><span class="caseContentInfo"><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+'</small></span><strong>'+money(item.value)+' БК</strong></div>').join('')||'<div class="upgradePlaceholder">В этом кейсе пока нет предметов.</div>'}
+function getDropChancePercent(caseId,itemId){
+ const c=cases[caseId],pool=getDropPool(caseId);
+ if(!c||!pool.length)return 0;
+ if(c.mythicOnly)return 100/pool.length;
+ const plan=dropPlan(caseId),item=pool.find(x=>x.id===itemId);
+ if(!item||!plan.groups.length||!(plan.total>0))return 100/pool.length;
+ const weight=Math.pow(c.price/Math.max(1,item.value),2);
+ if(item.value>c.price*1.25)return plan.highWeight?5*weight/plan.highWeight:0;
+ const group=plan.groups.find(g=>g.items.some(x=>x.id===itemId));
+ if(!group||!group.weightTotal)return 0;
+ const mainShare=plan.high.length?0.95:1;
+ return 100*mainShare*(group.groupWeight/plan.total)*(weight/group.weightTotal);
+}
+function renderCaseContents(){
+ const root=$('caseContentsList');if(!root)return;
+ const pool=getDropPool(state.caseId);$('caseContentsCount').textContent=pool.length+' предметов';
+ root.innerHTML=pool.map(item=>'<div class="caseContentRow" style="--rarity:'+item.color+'"><span class="caseContentThumb">'+itemImg(item)+'</span><span class="caseContentInfo"><b>'+esc(item.name)+'</b><small>'+esc(item.rarity)+' · шанс '+getDropChancePercent(state.caseId,item.id).toFixed(2)+'%</small></span><strong>'+money(item.value)+' БК</strong></div>').join('')||'<div class="upgradePlaceholder">В этом кейсе пока нет предметов.</div>';
+}
 function renderCaseMenu(){const root=$('caseMenuGrid');if(!root)return;root.innerHTML=cases.map(c=>'<button type="button" class="caseMenuCard '+(c.id===state.caseId?'active':'')+'" data-menu-case="'+c.id+'"><span class="caseMenuImage">'+makeImg(caseImage(c),c.name)+'</span><span class="caseMenuMeta"><b>'+esc(c.name)+'</b><small>'+money(c.price)+' БК · '+getDropPool(c.id).length+' предметов</small></span><span class="caseMenuArrow">›</span></button>').join('');root.querySelectorAll('[data-menu-case]').forEach(b=>b.addEventListener('click',()=>{selectCase(Number(b.dataset.menuCase));$('caseMenuModal').classList.remove('show')}))}
 function openCaseMenu(){renderCaseMenu();$('caseMenuModal').classList.add('show')}
 function selectCase(id){if(!cases[id])return;state.caseId=id;save();$('selectedCaseName').textContent='Кейс: '+cases[id].name;$('selectedCaseImage').src=caseImage(cases[id]);$('caseProgress').textContent=cases[id].mythicOnly?'В кейсе ровно '+getDropPool(id).length+' мифических предметов':'В кейсе '+getDropPool(id).length+' доступных предметов';updateBalance();renderCaseStrip();renderCaseContents();renderLanes(true)}
@@ -958,19 +981,56 @@ $('goInventory').addEventListener('click',()=>switchPage('inventory'));
 const _dropCache={};
 function dropPlan(caseId){
  if(_dropCache[caseId])return _dropCache[caseId];
- const pool=getDropPool(caseId),P=cases[caseId].price,base=[1,.25,.06,.015,.004];
- const groups=rarities.slice(0,5).map((r,k)=>{const l=pool.filter(x=>x.rarity===r);return {k,items:l,mean:l.length?l.reduce((a,x)=>a+x.value,0)/l.length:0,base:base[k]}}).filter(g=>g.items.length);
- const ev=sc=>{let w=0,e=0;for(const g of groups){const x=g.base*Math.pow(sc,g.k);w+=x;e+=x*g.mean}return e/w};
- let lo=0,hi=1e5;const target=1.15*P;
- if(ev(hi)<target)lo=hi;else if(ev(0)>=target)lo=0;else for(let n=0;n<60;n++){const m=(lo+hi)/2;if(ev(m)<target)lo=m;else hi=m}
- const sc=lo;groups.forEach(g=>g.w=g.base*Math.pow(sc,g.k));
- return _dropCache[caseId]={groups,total:groups.reduce((a,g)=>a+g.w,0)};
+ const c=cases[caseId],pool=getDropPool(caseId),P=c.price;
+ // Above 125% of the case price is the rare bonus pool (5% of drops).
+ const main=pool.filter(x=>x.value<=P*1.25);
+ const high=pool.filter(x=>x.value>P*1.25);
+ const rarityBase=[1,.25,.06,.015,.004];
+ const itemWeight=item=>Math.pow(P/Math.max(1,item.value),2);
+ const groups=rarities.slice(0,5).map((r,k)=>{
+  const list=main.filter(x=>x.rarity===r);
+  const weights=list.map(itemWeight),weightTotal=weights.reduce((a,b)=>a+b,0);
+  const mean=weightTotal?list.reduce((sum,item,i)=>sum+item.value*weights[i],0)/weightTotal:0;
+  return {k,items:list,weights,weightTotal,mean,base:rarityBase[k]};
+ }).filter(g=>g.items.length);
+ const ev=scale=>{
+  let totalWeight=0,expected=0;
+  for(const g of groups){const w=g.base*Math.pow(scale,g.k);totalWeight+=w;expected+=w*g.mean}
+  return totalWeight?expected/totalWeight:0;
+ }; let lo=0,hi=1e5;const target=1.15*P;
+ if(groups.length){
+  if(ev(hi)<target)lo=hi;
+  else if(ev(0)>=target)lo=0;
+  else for(let n=0;n<60;n++){const mid=(lo+hi)/2;if(ev(mid)<target)lo=mid;else hi=mid}
+ }
+ const scale=lo;
+ groups.forEach(g=>g.groupWeight=g.base*Math.pow(scale,g.k));
+ return _dropCache[caseId]={
+  groups,
+  total:groups.reduce((sum,g)=>sum+g.groupWeight,0),
+  high,
+  highWeight:high.reduce((sum,item)=>sum+itemWeight(item),0)
+ };
+}
+function weightedItem(itemsList,weights,total){
+ if(!itemsList.length)return null;
+ let roll=Math.random()*(total||weights.reduce((a,b)=>a+b,0));
+ for(let i=0;i<itemsList.length;i++){roll-=weights[i];if(roll<0)return itemsList[i]}
+ return itemsList[itemsList.length-1];
 }
 function drawDrop(caseId){
- const chosenCase=cases[caseId],pool=getDropPool(caseId);if(!pool.length)return null;if(chosenCase?.mythicOnly)return pool[Math.floor(Math.random()*pool.length)];
- const plan=dropPlan(caseId);if(!plan.groups.length||!(plan.total>0))return pool[Math.floor(Math.random()*pool.length)];
- let roll=Math.random()*plan.total,sel=plan.groups[plan.groups.length-1];for(const g of plan.groups){roll-=g.w;if(roll<0){sel=g;break}}
- return sel.items[Math.floor(Math.random()*sel.items.length)];
+ const chosenCase=cases[caseId],pool=getDropPool(caseId);
+ if(!pool.length)return null;
+ if(chosenCase?.mythicOnly)return pool[Math.floor(Math.random()*pool.length)];
+ const plan=dropPlan(caseId);
+ if(!plan.groups.length||!(plan.total>0))return pool[Math.floor(Math.random()*pool.length)];
+ if(plan.high.length&&Math.random()<0.05){
+  const weights=plan.high.map(item=>Math.pow(chosenCase.price/Math.max(1,item.value),2));
+  return weightedItem(plan.high,weights,plan.highWeight);
+ }
+ let roll=Math.random()*plan.total,selected=plan.groups[plan.groups.length-1];
+ for(const group of plan.groups){roll-=group.groupWeight;if(roll<0){selected=group;break}}
+ return weightedItem(selected.items,selected.weights,selected.weightTotal);
 }
 function openCaseCore(){
  if(revealing)return;const cost=cases[state.caseId].price*qty;if(state.balance<cost){notify('Недостаточно БК! Нужно '+money(cost)+' БК, у тебя '+money(state.balance)+' БК.');return}
